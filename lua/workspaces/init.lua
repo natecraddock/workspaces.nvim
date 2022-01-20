@@ -54,7 +54,7 @@ workspaces.add = function(path, name)
     local w = load_workspaces()
     for _, workspace in ipairs(w) do
         if workspace.name == name or workspace.path == path then
-            vim.notify("workspaces.nvim: workspace is already registered", levels.info)
+            vim.notify("workspaces.nvim: workspace is already registered", levels.WARN)
             return
         end
     end
@@ -65,7 +65,6 @@ workspaces.add = function(path, name)
     })
 
     store_workspaces(w)
-    vim.notify("workspaces.nvim: workspace registered", levels.info)
 end
 
 local find = function(name)
@@ -76,7 +75,7 @@ local find = function(name)
     local w = load_workspaces()
     for i, workspace in ipairs(w) do
         if workspace.path == name or workspace.name == name then
-            return w, i
+            return workspace, i
         end
     end
 
@@ -88,19 +87,19 @@ end
 workspaces.remove = function(name)
     local workspace, i = find(name)
     if not workspace then
-        vim.notify(string.format("workspaces.nvim: workspace '%s' does not exist", name), levels.warn)
+        vim.notify(string.format("workspaces.nvim: workspace '%s' does not exist", name), levels.WARN)
         return
     end
 
-    table.remove(workspace, i)
-    store_workspaces(workspace)
-    vim.notify("workspaces.nvim: workspace removed", levels.info)
+    local w = load_workspaces()
+    table.remove(w, i)
+    store_workspaces(w)
 end
 
 -- returns the list of all workspaces
 -- each workspace is formatted as { name = "", path = "" } tables
 workspaces.list = function()
-    return load_workspaces()
+    print(vim.inspect(load_workspaces()))
 end
 
 -- opens the named workspace
@@ -108,14 +107,87 @@ end
 workspaces.open = function(name)
     local workspace, i = find(name)
     if not workspace then
-        vim.notify(string.format("workspaces.nvim: workspace '%s' does not exist", name), levels.warn)
+        vim.notify(string.format("workspaces.nvim: workspace '%s' does not exist", name), levels.WARN)
         return
     end
 
-    vim.cmd(string.format("cd %s | enew", workspace.path))
-    vim.notify(string.format("workspace.nvim: opened '%s'", workspace.name), levels.info)
+    -- change directory and open a new scratch buffer
+    vim.cmd(string.format("cd %s | noswapfile hide enew", workspace.path))
+    vim.cmd[[
+    setlocal buftype=nofile
+    setlocal bufhidden=hide
+    setlocal noswapfile
+    ]]
 end
 
--- TODO: user commands
+local subcommands = {"add", "remove", "list", "open"}
+
+local subcommand_complete = function(lead)
+    return vim.tbl_filter(function(item)
+        return vim.startswith(item, lead)
+    end, subcommands)
+end
+
+
+local workspace_name_complete = function(lead)
+    local workspaces = vim.tbl_filter(function(workspace)
+        if lead == "" then return true end
+        return vim.startswith(workspace.name, lead)
+    end, load_workspaces())
+
+    return vim.tbl_map(function(workspace)
+        return workspace.name
+    end, workspaces)
+end
+
+-- used to provide autocomplete for user commands
+workspaces.complete = function(lead, line, pos)
+    -- remove the command name from the front
+    line = string.sub(line, #"Workspaces " + 1)
+    pos = pos - #"Workspaces "
+
+    -- completion for subcommands
+    if #line == 0 then return subcommands end
+    local index = string.find(line, " ")
+    if not index or pos < index then
+        return subcommand_complete(lead)
+    end
+
+    local subcommand = string.sub(line, 1, index - 1)
+
+    -- completion not provided past 2 args
+    if string.find(line, " ", index + 1) then return {} end
+
+    -- subcommand completion for remove and open
+    if subcommand == "remove" or subcommand == "open" then
+        return workspace_name_complete(lead)
+    end
+
+    return {}
+end
+
+-- entry point to the api from user commands
+-- subcommand is one of {add, remove, list, open}
+-- and arg1 and arg2 are optional. If set arg1 is a name and arg2 is a path
+workspaces.parse_args = function(subcommand, arg1, arg2)
+    if subcommand == "add" then
+        workspaces.add(arg2, arg1)
+    elseif subcommand == "remove" then
+        workspaces.remove(arg1)
+    elseif subcommand == "list" then
+        workspaces.list()
+    elseif subcommand == "open" then
+        workspaces.open(arg1)
+    else
+        vim.notify(string.format("workspaces.nvim: invalid subcommand '%s'", subcommand), levels.ERROR)
+    end
+end
+
+-- run to setup user commands
+workspaces.setup = function(opts)
+    vim.cmd[[
+    command! -nargs=+ -complete=customlist,v:lua.require'workspaces'.complete Workspaces lua require("workspaces").parse_args(<f-args>)
+    ]]
+end
 
 return workspaces
