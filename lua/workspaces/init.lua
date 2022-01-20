@@ -97,7 +97,12 @@ workspaces.remove = function(name)
 end
 
 -- returns the list of all workspaces
--- each workspace is formatted as { name = "", path = "" } tables
+-- each workspace is formatted as a { name = "", path = "" } table
+workspaces.get = function()
+    return load_workspaces()
+end
+
+-- displays the list of workspaces
 workspaces.list = function()
     print(vim.inspect(load_workspaces()))
 end
@@ -111,13 +116,8 @@ workspaces.open = function(name)
         return
     end
 
-    -- change directory and open a new scratch buffer
-    vim.cmd(string.format("cd %s | noswapfile hide enew", workspace.path))
-    vim.cmd[[
-    setlocal buftype=nofile
-    setlocal bufhidden=hide
-    setlocal noswapfile
-    ]]
+    -- change directory
+    vim.cmd(string.format("cd %s", workspace.path))
 end
 
 local subcommands = {"add", "remove", "list", "open"}
