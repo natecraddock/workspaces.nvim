@@ -1,20 +1,20 @@
-local levels = vim.log.levels
+local conf = require("workspaces.config")
 local util = require("workspaces.util")
 
--- path in which to store the list of workspaces
-local workspaces_path = vim.fn.stdpath("data") .. util.path.sep .. "workspaces"
+local config = conf.config
+local levels = vim.log.levels
 
 -- loads the workspaces from the datafile into a table
 -- the workspace file format is:
 -- * newline separated workspace entries
 -- * NULL (\0) separated (name, path) pairs
 local load_workspaces = function()
-    local data = util.file.read(workspaces_path)
+    local data = util.file.read(config.path)
 
     -- if the file has not yet been created, add an empty file
     if not data then
-        util.file.write(workspaces_path, "")
-        data = util.file.read(workspaces_path)
+        util.file.write(config.path, "")
+        data = util.file.read(config.path)
     end
 
     local lines = vim.split(data, "\n", { trimempty = true })
@@ -37,7 +37,7 @@ local store_workspaces = function(workspaces)
     for _, workspace in ipairs(workspaces) do
         data = data .. string.format("%s\0%s\n", workspace.name, workspace.path)
     end
-    util.file.write(workspaces_path, data)
+    util.file.write(config.path, data)
 end
 
 local M = {}
@@ -183,8 +183,10 @@ M.parse_args = function(subcommand, arg1, arg2)
     end
 end
 
--- run to setup user commands
+-- run to setup user commands and custom config
 M.setup = function(opts)
+    conf.setup(opts)
+
     vim.cmd[[
     command! -nargs=+ -complete=customlist,v:lua.require'workspaces'.complete Workspaces lua require("workspaces").parse_args(<f-args>)
     ]]
