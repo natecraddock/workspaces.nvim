@@ -40,31 +40,31 @@ local store_workspaces = function(workspaces)
     util.file.write(workspaces_path, data)
 end
 
-local workspaces = {}
+local M = {}
 
 -- add a workspace to the workspaces list
 -- path is optional, if omitted the current directory will be used
 -- name is optional, if omitted the path will be used
-workspaces.add = function(path, name)
+M.add = function(path, name)
     path = path or vim.fn.getcwd()
     if not name then
         name = util.path.basename(path)
     end
 
-    local w = load_workspaces()
-    for _, workspace in ipairs(w) do
+    local workspaces = load_workspaces()
+    for _, workspace in ipairs(workspaces) do
         if workspace.name == name or workspace.path == path then
             vim.notify("workspaces.nvim: workspace is already registered", levels.WARN)
             return
         end
     end
 
-    table.insert(w, {
+    table.insert(workspaces, {
         name = name,
         path = path,
     })
 
-    store_workspaces(w)
+    store_workspaces(workspaces)
 end
 
 local find = function(name)
@@ -72,8 +72,8 @@ local find = function(name)
         name = util.path.basename(vim.fn.getcwd())
     end
 
-    local w = load_workspaces()
-    for i, workspace in ipairs(w) do
+    local workspaces = load_workspaces()
+    for i, workspace in ipairs(workspaces) do
         if workspace.path == name or workspace.name == name then
             return workspace, i
         end
@@ -84,32 +84,32 @@ end
 
 -- remove a workspace from the workspaces list by name
 -- name is optional, if omitted the current directory will be used
-workspaces.remove = function(name)
+M.remove = function(name)
     local workspace, i = find(name)
     if not workspace then
         vim.notify(string.format("workspaces.nvim: workspace '%s' does not exist", name), levels.WARN)
         return
     end
 
-    local w = load_workspaces()
-    table.remove(w, i)
-    store_workspaces(w)
+    local workspaces = load_workspaces()
+    table.remove(workspaces, i)
+    store_workspaces(workspaces)
 end
 
 -- returns the list of all workspaces
 -- each workspace is formatted as a { name = "", path = "" } table
-workspaces.get = function()
+M.get = function()
     return load_workspaces()
 end
 
 -- displays the list of workspaces
-workspaces.list = function()
+M.list = function()
     print(vim.inspect(load_workspaces()))
 end
 
 -- opens the named workspace
 -- this changes the current directory to the path specified in the workspace entry
-workspaces.open = function(name)
+M.open = function(name)
     local workspace, i = find(name)
     if not workspace then
         vim.notify(string.format("workspaces.nvim: workspace '%s' does not exist", name), levels.WARN)
@@ -141,7 +141,7 @@ local workspace_name_complete = function(lead)
 end
 
 -- used to provide autocomplete for user commands
-workspaces.complete = function(lead, line, pos)
+M.complete = function(lead, line, pos)
     -- remove the command name from the front
     line = string.sub(line, #"Workspaces " + 1)
     pos = pos - #"Workspaces "
@@ -169,25 +169,32 @@ end
 -- entry point to the api from user commands
 -- subcommand is one of {add, remove, list, open}
 -- and arg1 and arg2 are optional. If set arg1 is a name and arg2 is a path
-workspaces.parse_args = function(subcommand, arg1, arg2)
+M.parse_args = function(subcommand, arg1, arg2)
     if subcommand == "add" then
-        workspaces.add(arg2, arg1)
+        M.add(arg2, arg1)
     elseif subcommand == "remove" then
-        workspaces.remove(arg1)
+        M.remove(arg1)
     elseif subcommand == "list" then
-        workspaces.list()
+        M.list()
     elseif subcommand == "open" then
-        workspaces.open(arg1)
+        M.open(arg1)
     else
         vim.notify(string.format("workspaces.nvim: invalid subcommand '%s'", subcommand), levels.ERROR)
     end
 end
 
 -- run to setup user commands
-workspaces.setup = function(opts)
+M.setup = function(opts)
     vim.cmd[[
     command! -nargs=+ -complete=customlist,v:lua.require'workspaces'.complete Workspaces lua require("workspaces").parse_args(<f-args>)
     ]]
 end
 
-return workspaces
+--[[
+TODO:
+:Workspaces add [path-autocomplete] [path-autocomplete]
+:Workspaces add [path] bug and expand
+:Workspaces update [name] [dir]
+]]
+
+return M
