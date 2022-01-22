@@ -40,6 +40,29 @@ local store_workspaces = function(workspaces)
     util.file.write(config.path, data)
 end
 
+local run_hook = function(hook)
+    if type(hook) == "function" then
+        hook()
+    elseif type(hook) == "string" then
+        vim.cmd(hook)
+    else
+        vim.notify(string.format("workspace.nvim: invalid hook '%s'", hook), levels.ERROR)
+    end
+end
+
+-- given a list of hooks, execute each in the order given
+local run_hooks = function(hooks)
+    if not hooks then return end
+
+    if type(hooks) == "table" then
+        for _, hook in ipairs(hooks) do
+            run_hook(hook)
+        end
+    else
+        run_hook(hooks)
+    end
+end
+
 local M = {}
 
 -- add a workspace to the workspaces list
@@ -65,6 +88,7 @@ M.add = function(path, name)
     })
 
     store_workspaces(workspaces)
+    run_hooks(config.hooks.add)
 end
 
 local find = function(name)
@@ -94,6 +118,7 @@ M.remove = function(name)
     local workspaces = load_workspaces()
     table.remove(workspaces, i)
     store_workspaces(workspaces)
+    run_hooks(config.hooks.remove)
 end
 
 -- returns the list of all workspaces
@@ -118,6 +143,7 @@ M.open = function(name)
 
     -- change directory
     vim.cmd(string.format("cd %s", workspace.path))
+    run_hooks(config.hooks.open)
 end
 
 local subcommands = {"add", "remove", "list", "open"}
@@ -186,6 +212,7 @@ end
 -- run to setup user commands and custom config
 M.setup = function(opts)
     conf.setup(opts)
+    config = conf.config
 
     vim.cmd[[
     command! -nargs=+ -complete=customlist,v:lua.require'workspaces'.complete Workspaces lua require("workspaces").parse_args(<f-args>)
