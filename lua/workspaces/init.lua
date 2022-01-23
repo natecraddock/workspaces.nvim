@@ -70,6 +70,7 @@ local M = {}
 -- name is optional, if omitted the path will be used
 M.add = function(path, name)
     path = path or vim.fn.getcwd()
+    path = vim.fn.expand(path, ":p")
     if not name then
         name = util.path.basename(path)
     end
