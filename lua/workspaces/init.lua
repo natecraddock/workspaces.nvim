@@ -141,6 +141,11 @@ end
 -- opens the named workspace
 -- this changes the current directory to the path specified in the workspace entry
 M.open = function(name)
+    if not name then
+        vim.notify(string.format("workspaces.nvim: open requires an argument"), levels.ERROR)
+        return
+    end
+
     local workspace, i = find(name)
     if not workspace then
         vim.notify(string.format("workspaces.nvim: workspace '%s' does not exist", name), levels.WARN)
