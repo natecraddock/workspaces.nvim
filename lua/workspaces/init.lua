@@ -142,7 +142,7 @@ M.open = function(name)
     end
 
     -- change directory
-    vim.cmd(string.format("cd %s", workspace.path))
+    vim.api.nvim_set_current_dir(workspace.path)
     run_hooks(config.hooks.open)
 end
 

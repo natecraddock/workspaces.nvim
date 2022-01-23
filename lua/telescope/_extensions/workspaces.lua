@@ -50,7 +50,7 @@ local workspaces_picker = function(opts)
 
         attach_mappings = function(prompt_bufnr, map)
             actions.select_default:replace(function()
-                actions.close(prompt_bufnr)
+                actions._close(prompt_bufnr, true)
                 local workspace = action_state.get_selected_entry().value
                 workspaces.open(workspace.name)
             end)
