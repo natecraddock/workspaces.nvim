@@ -68,13 +68,34 @@ local M = {}
 -- add a workspace to the workspaces list
 -- path is optional, if omitted the current directory will be used
 -- name is optional, if omitted the path will be used
+-- if path is nil and name looks like a path, then name will be used
+-- as the path
 M.add = function(path, name)
-    path = path or vim.fn.getcwd()
-    path = vim.fn.expand(path, ":p")
-    if not name then
+    if not path and not name then
+        -- none given, use current directory and name
+        path = vim.fn.getcwd()
         name = util.path.basename(path)
+    elseif not path then
+        if string.find(name, util.path.sep) then
+            -- only path given, extract name from path
+            path = vim.fn.expand(name, ":p")
+            name = util.path.basename(path)
+        else
+            -- name given, use cwd as path
+            path = vim.fn.getcwd()
+        end
+    else
+        -- both given, ensure the path is expanded
+        path = vim.fn.expand(path, ":p")
     end
 
+    -- ensure path is valid
+    if vim.fn.isdirectory(path) == 0 then
+        vim.notify(string.format("workspaces.nvim: path `%s` does not exist", path), levels.ERROR)
+        return
+    end
+
+    -- check if it already exists
     local workspaces = load_workspaces()
     for _, workspace in ipairs(workspaces) do
         if workspace.name == name or workspace.path == path then
