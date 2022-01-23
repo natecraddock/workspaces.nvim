@@ -130,7 +130,12 @@ end
 
 -- displays the list of workspaces
 M.list = function()
-    print(vim.inspect(load_workspaces()))
+    local workspaces = load_workspaces()
+    local ending = "\n"
+    for i, workspace in ipairs(workspaces) do
+        if #workspaces == i then ending = "" end
+        print(string.format("%s %s%s", workspace.name, workspace.path, ending))
+    end
 end
 
 -- opens the named workspace
