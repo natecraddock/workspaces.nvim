@@ -63,38 +63,38 @@ require("workspaces").setup({
 
 The setup function registers the following command:
 
-* `:Workspaces [subcommand] [args]`
+`:Workspaces [subcommand] [args]`
 
-  subcommand is one of **add**, **remove**, **list**, or **open**. Autocomplete
-  of subcommands and workspace names is provided. *opening* a workspace means to
-  change the current directory to that workspace's path.
+subcommand is one of **add**, **remove**, **list**, or **open**. Autocomplete
+of subcommands and workspace names is provided. *opening* a workspace means to
+change the current directory to that workspace's path.
 
-  * **add** [name] [path]
+* `:Workspaces add [name] [path]`
 
-    If both name and path are omitted, the current working directory will be
-    registered as a workspace, with the last path segment as the name.
+  If both name and path are omitted, the current working directory will be
+  registered as a workspace, with the last path segment as the name.
 
-    If only name is provided, one of two actions will follow. (1) if name looks
-    like a path, that path will be registered, (2) otherwise the current working
-    directory will be registered as a workspace, with the given name.
+  If only name is provided, one of two actions will follow. (1) if name looks
+  like a path, that path will be registered, (2) otherwise the current working
+  directory will be registered as a workspace, with the given name.
 
-    if both name and path are provided, the workspace with name and path will be
-    registered.
+  if both name and path are provided, the workspace with name and path will be
+  registered.
 
-  * **remove** [name]
+* `:Workspaces remove [name]`
 
-    If name is omitted, the workspace registered in the current working
-    directory will be removed, if it exists.
+  If name is omitted, the workspace registered in the current working
+  directory will be removed, if it exists.
 
-    If name is provided, the specified workspace will be removed.
+  If name is provided, the specified workspace will be removed.
 
-  * **list**
+* `:Workspaces list`
 
-    Prints all workspaces.
+  Prints all workspaces.
 
-  * **open** [name]
+* `:Workspaces open [name]`
 
-    Opens the named workspace.
+  Opens the named workspace.
 
 See `:h workspaces-usage` for more information on the commands.
 
