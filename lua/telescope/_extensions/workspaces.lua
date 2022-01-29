@@ -8,6 +8,8 @@ local telescope = require("telescope")
 
 local workspaces = require("workspaces")
 
+local keep_insert = false
+
 local workspaces_picker = function(opts)
     -- compute spacing
     local workspaces_list = workspaces.get()
@@ -48,11 +50,13 @@ local workspaces_picker = function(opts)
 
         sorter = conf.generic_sorter(opts),
 
-        attach_mappings = function(prompt_bufnr, map)
+        attach_mappings = function(prompt_bufnr, _)
             actions.select_default:replace(function()
-                actions._close(prompt_bufnr, true)
+                actions._close(prompt_bufnr, keep_insert)
                 local workspace = action_state.get_selected_entry().value
-                workspaces.open(workspace.name)
+                if workspace and workspace ~= "" then
+                    workspaces.open(workspace.name)
+                end
             end)
             return true
         end,
@@ -60,7 +64,15 @@ local workspaces_picker = function(opts)
 end
 
 return telescope.register_extension({
+    setup = function(ext_config)
+        if ext_config.keep_insert then
+            keep_insert = ext_config.keep_insert
+        end
+    end,
+
     exports = {
-        workspaces = workspaces_picker,
+        workspaces = function(opts)
+            workspaces_picker(opts)
+        end,
     },
 })
