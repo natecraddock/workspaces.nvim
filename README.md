@@ -39,6 +39,7 @@ The setup function accepts a table to modify the default configuration:
 
     -- lists of hooks to run after specific actions
     -- hooks can be a lua function or a vim command (string)
+    -- if only one hook is needed, the list may be omitted
     hooks = {
         add = {},
         remove = {},
@@ -148,7 +149,8 @@ Coming soon!
 ## Examples
 
 Remember that more than one hook is allowed, so these may be combined in
-creative ways! Hooks may also be registered for adding and removing workspaces.
+creative ways! Hooks may also be registered after adding and removing
+workspaces, not only after opening a workspace.
 
 ### fzf file finder
 
@@ -157,35 +159,46 @@ Change directory to the workspace and run fzf.
 ```lua
 require("workspaces").setup({
     hooks = {
-        open = { "FZF" },
+        open = "FZF",
     }
 })
 ```
 
 ### Open a file tree
 
-Change directory to the workspace and open
-[nvim-tree](https://github.com/kyazdani42/nvim-tree.lua).
+Open [nvim-tree](https://github.com/kyazdani42/nvim-tree.lua).
 
 ```lua
 require("workspaces").setup({
     hooks = {
-        open = { "NvimTreeOpen" },
+        open = "NvimTreeOpen",
     }
 })
 ```
 
 ### Load a saved session
 
-Change directory to the workspace and load any saved sessions (using
+Load any saved sessions using
 [natecraddock/sessions.nvim](https://github.com.natecraddock/sessions.nvim).
 
-require("workspaces").setup({
 ```lua
+require("workspaces").setup({
     hooks = {
         open = function()
           require("sessions").load(nil, { silent = true })
         end,
+    }
+})
+```
+
+### Combo
+
+Open nvim-tree and a telescope file picker.
+
+```lua
+require("workspaces").setup({
+    hooks = {
+        open = { "NvimTreeOpen", "Telescope find_files" },
     }
 })
 ```
