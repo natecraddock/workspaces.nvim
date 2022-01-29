@@ -1,8 +1,19 @@
-local conf = require("workspaces.config")
 local util = require("workspaces.util")
 
-local config = conf.config
 local levels = vim.log.levels
+
+local config = {
+    -- path to a file to store workspaces data in
+    path = vim.fn.stdpath("data") .. util.path.sep .. "workspaces",
+
+    -- lists of hooks to run after specific actions
+    -- hooks can be a lua function or a vim command (string)
+    hooks = {
+        add = {},
+        remove = {},
+        open = {},
+    },
+}
 
 -- loads the workspaces from the datafile into a table
 -- the workspace file format is:
@@ -46,7 +57,7 @@ local run_hook = function(hook)
     elseif type(hook) == "string" then
         vim.cmd(hook)
     else
-        vim.notify(string.format("workspace.nvim: invalid hook '%s'", hook), levels.ERROR)
+        vim.notify(string.format("workspaces.nvim: invalid hook '%s'", hook), levels.ERROR)
     end
 end
 
@@ -243,8 +254,8 @@ end
 
 -- run to setup user commands and custom config
 M.setup = function(opts)
-    conf.setup(opts)
-    config = conf.config
+    opts = opts or {}
+    config = vim.tbl_deep_extend("force", {}, config, opts)
 
     vim.cmd[[
     command! -nargs=+ -complete=customlist,v:lua.require'workspaces'.complete Workspaces lua require("workspaces").parse_args(<f-args>)

@@ -1,7 +1,6 @@
 local M = {}
 
 local uv = vim.loop
-local levels = vim.log.levels
 
 -- system dependent path separator from plenary.nvim
 M.path = {}
