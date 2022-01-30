@@ -71,22 +71,11 @@ change the current directory to that workspace's path.
 
 * `:Workspaces add [name] [path]`
 
-  If both name and path are omitted, the current working directory will be
-  registered as a workspace, with the last path segment as the name.
-
-  If only name is provided, one of two actions will follow. (1) if name looks
-  like a path, that path will be registered, (2) otherwise the current working
-  directory will be registered as a workspace, with the given name.
-
-  if both name and path are provided, the workspace with name and path will be
-  registered.
+  The workspace with the specified name and path will be registered.
 
 * `:Workspaces remove [name]`
 
-  If name is omitted, the workspace registered in the current working
-  directory will be removed, if it exists.
-
-  If name is provided, the specified workspace will be removed.
+  The workspace with the specified name will be removed.
 
 * `:Workspaces list`
 
@@ -113,9 +102,6 @@ workspaces.list()
 
 workspaces.open(name: string)
 ```
-
-See `h: workspaces-api` for more information.
-
 ## Telescope Picker
 
 workspaces.nvim is bundled with a
@@ -179,7 +165,7 @@ require("workspaces").setup({
 ### Load a saved session
 
 Load any saved sessions using
-[natecraddock/sessions.nvim](https://github.com.natecraddock/sessions.nvim).
+[natecraddock/sessions.nvim](https://github.com/natecraddock/sessions.nvim).
 
 ```lua
 require("workspaces").setup({
