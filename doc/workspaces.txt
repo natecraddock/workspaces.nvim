@@ -84,6 +84,27 @@ Prints all workspaces.
 Opens the named workspace.
 
 ==============================================================================
+HOOKS                                                       *workspaces-hooks*
+
+There are 4 types of hooks that can be registered in three categories: add,
+remove, and open.
+
+Each hook may be either a single command or Lua function, or a list of
+commands and Lua functions. See |workspaces-examples| for reference.
+
+add ~
+run hooks after adding a workspace
+
+remove ~
+run hooks after removing a workspace
+
+open ~
+run hooks after changing directory when opening a workspace
+
+open_pre ~
+run hooks before changing directory when opening a workspace
+
+==============================================================================
 API                                                           *workspaces-api*
 
 local workspaces = require("workspaces")
