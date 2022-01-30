@@ -89,7 +89,7 @@ M.add = function(path, name)
     elseif not path then
         if string.find(name, util.path.sep) then
             -- only path given, extract name from path
-            path = vim.fn.expand(name, ":p")
+            path = vim.fn.fnamemodify(name, ":p")
             name = util.path.basename(path)
         else
             -- name given, use cwd as path
@@ -97,7 +97,7 @@ M.add = function(path, name)
         end
     else
         -- both given, ensure the path is expanded
-        path = vim.fn.expand(path, ":p")
+        path = vim.fn.fnamemodify(path, ":p")
     end
 
     -- ensure path is valid
