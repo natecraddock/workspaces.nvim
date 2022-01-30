@@ -109,13 +109,25 @@ API                                                           *workspaces-api*
 
 local workspaces = require("workspaces")
 
-workspaces.add(path: string, name: string)
+workspaces.add(path: string, name: string) ~
+Add a workspace with the given name and path. If name or path are nil, the
+current directory will be used to set the missing parameter.
 
-workspaces.remove(name: string)
+workspaces.remove(name: string) ~
+Remove a workspace with the given name.
 
-workspaces.list()
+workspaces.list() ~
+Print all workspaces to the commandline.
 
-workspaces.open(name: string)
+workspaces.open(name: string) ~
+Open a workspace with the given name
+
+workspaces.get() ~
+Returns a list (table) of all workspaces in { name: string, path: string }
+pairs.
+
+workspaces.name() ~
+Returns the name of the current workspace or nil if no workspace is open.
 
 ==============================================================================
 TELESCOPE                                               *workspaces-telescope*

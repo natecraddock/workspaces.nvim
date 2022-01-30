@@ -171,6 +171,8 @@ M.list = function()
     end
 end
 
+local current_workspace = nil
+
 -- opens the named workspace
 -- this changes the current directory to the path specified in the workspace entry
 M.open = function(name)
@@ -188,7 +190,14 @@ M.open = function(name)
     -- change directory
     run_hooks(config.hooks.open_pre)
     vim.api.nvim_set_current_dir(workspace.path)
+    current_workspace = workspace.name
     run_hooks(config.hooks.open)
+end
+
+---@returns string|nil
+---returns the name of the current workspace
+M.name = function()
+    return current_workspace
 end
 
 local subcommands = {"add", "remove", "list", "open"}
