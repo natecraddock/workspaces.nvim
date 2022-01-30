@@ -102,7 +102,14 @@ workspaces.remove(name: string)
 workspaces.list()
 
 workspaces.open(name: string)
+
+workspaces.get()
+
+workspaces.name()
 ```
+
+See `:h workspaces-api` for more information on the API functions.
+
 ## Telescope Picker
 
 workspaces.nvim is bundled with a
