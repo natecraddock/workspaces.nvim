@@ -11,10 +11,10 @@ workspaces.nvim provides a few simple commands for managing workspace
 directories in neovim. A workspace is a name and a path, and opening a
 workspace will set the current directory to the correct path.
 
-* Register a workspace with `:Workspaces add`
+* Register a workspace with |:Workspaces add|
 * Open a registered workspace with `:Workspaces open [name]`
 * Hooks may be registered to provide additional functionality
-* A telescope extension `:Telescope workspaces` is provided for fuzzy finding
+* A telescope extension |:Telescope workspaces| is provided for fuzzy finding
   over workspaces
 
 Nothing runs automatically. The idea is that workspace creation is an
@@ -99,9 +99,10 @@ workspaces.open(name: string)
 ==============================================================================
 TELESCOPE                                               *workspaces-telescope*
 
-workspaces.nvim is bundled with a
-[telescope](https://github.com/nvim-telescope/telescope.nvim) picker
-extension. To enable, add the following to your config >
+                                                       *:Telescope workspaces*
+
+workspaces.nvim is bundled with a telescope picker extension. To enable, add
+the following to your config >
 
     telescope.load_extension("workspaces")
 <
@@ -119,6 +120,8 @@ setup function. >
       }
     })
 <
+
+After registration, the picker is available via |:Telescope workspaces|.
 
 ==============================================================================
 EXAMPLES                                                 *workspaces-examples*
