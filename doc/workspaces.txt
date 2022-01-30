@@ -41,7 +41,8 @@ configuration. >
         hooks = {
             add = {},
             remove = {},
-            open = {},
+            open_pre = {}, -- run before changing directory
+            open = {},     -- run after changing directory
         },
     })
 <

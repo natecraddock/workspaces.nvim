@@ -11,6 +11,7 @@ local config = {
     hooks = {
         add = {},
         remove = {},
+        open_pre = {},
         open = {},
     },
 }
@@ -185,6 +186,7 @@ M.open = function(name)
     end
 
     -- change directory
+    run_hooks(config.hooks.open_pre)
     vim.api.nvim_set_current_dir(workspace.path)
     run_hooks(config.hooks.open)
 end

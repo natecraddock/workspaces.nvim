@@ -43,6 +43,7 @@ The setup function accepts a table to modify the default configuration:
     hooks = {
         add = {},
         remove = {},
+        open_pre = {},
         open = {},
     },
 }
