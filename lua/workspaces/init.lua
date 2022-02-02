@@ -6,6 +6,9 @@ local config = {
     -- path to a file to store workspaces data in
     path = vim.fn.stdpath("data") .. util.path.sep .. "workspaces",
 
+    -- to change directory for nvim (:cd), or only for window (:lcd)
+    global_cd = true,
+
     -- lists of hooks to run after specific actions
     -- hooks can be a lua function or a vim command (string)
     hooks = {
@@ -194,7 +197,13 @@ M.open = function(name)
 
     -- change directory
     run_hooks(config.hooks.open_pre)
-    vim.api.nvim_set_current_dir(workspace.path)
+
+    if config.global_cd then
+        vim.api.nvim_set_current_dir(workspace.path)
+    else
+        vim.cmd(string.format("lcd %s", workspace.path))
+    end
+
     current_workspace = workspace.name
     run_hooks(config.hooks.open)
 end
