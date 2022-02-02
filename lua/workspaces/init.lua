@@ -125,6 +125,11 @@ M.add = function(path, name)
     run_hooks(config.hooks.add)
 end
 
+-- TODO: make this the default api in v1.0
+M.add_swap = function(name, path)
+    M.add(path, name)
+end
+
 local find = function(name)
     if not name then
         name = util.path.basename(vim.fn.getcwd())
@@ -220,6 +225,12 @@ local workspace_name_complete = function(lead)
     end, workspaces)
 end
 
+-- completion for workspace names only
+M.workspace_complete = function(lead, _, _)
+    return workspace_name_complete(lead)
+end
+
+-- DEPRECATED: will be removed in v1.0
 -- used to provide autocomplete for user commands
 M.complete = function(lead, line, pos)
     -- remove the command name from the front
@@ -250,6 +261,7 @@ end
 -- subcommand is one of {add, remove, list, open}
 -- and arg1 and arg2 are optional. If set arg1 is a name and arg2 is a path
 M.parse_args = function(subcommand, arg1, arg2)
+    vim.notify("The command :Workspaces [add|remove|list|open] is deprecated and will be removed in v1.0. Use :Workspaces[Add|Remove|List|Open] instead.", levels.WARN)
     if subcommand == "add" then
         M.add(arg2, arg1)
     elseif subcommand == "remove" then
@@ -270,14 +282,12 @@ M.setup = function(opts)
 
     vim.cmd[[
     command! -nargs=+ -complete=customlist,v:lua.require'workspaces'.complete Workspaces lua require("workspaces").parse_args(<f-args>)
+
+    command! -nargs=* -complete=file WorkspacesAdd lua require("workspaces").add_swap(<f-args>)
+    command! -nargs=? -complete=customlist,v:lua.require'workspaces'.workspace_complete WorkspacesRemove lua require("workspaces").remove(<f-args>)
+    command! WorkspacesList lua require("workspaces").list()
+    command! -nargs=1 -complete=customlist,v:lua.require'workspaces'.workspace_complete WorkspacesOpen lua require("workspaces").open(<f-args>)
     ]]
 end
-
---[[
-TODO:
-:Workspaces add [path-autocomplete] [path-autocomplete]
-:Workspaces add [path] bug and expand
-:Workspaces update [name] [dir]
-]]
 
 return M

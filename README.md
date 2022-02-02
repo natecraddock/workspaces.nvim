@@ -62,29 +62,24 @@ require("workspaces").setup({
 
 ## Commands
 
-The setup function registers the following command:
+The setup function registers the following user commands:
 
-`:Workspaces [subcommand] [args]`
-
-subcommand is one of **add**, **remove**, **list**, or **open**. Autocomplete
-of subcommands and workspace names is provided. *opening* a workspace means to
-change the current directory to that workspace's path.
-
-* `:Workspaces add [name] [path]`
+* `:WorkspacesAdd [name] [path]`
 
   The workspace with the specified name and path will be registered.
 
-* `:Workspaces remove [name]`
+* `:WorkspacesRemove [name]`
 
   The workspace with the specified name will be removed.
 
-* `:Workspaces list`
+* `:WorkspacesList`
 
   Prints all workspaces.
 
-* `:Workspaces open [name]`
+* `:WorkspacesOpen [name]`
 
-  Opens the named workspace.
+  Opens the named workspace. *opening* a workspace means to change the current
+  directory to that workspace's path.
 
 See `:h workspaces-usage` for more information on the commands.
 
