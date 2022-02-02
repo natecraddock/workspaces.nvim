@@ -37,6 +37,10 @@ The setup function accepts a table to modify the default configuration:
     -- on a unix system this would be ~/.local/share/nvim/workspaces
     path = vim.fn.stdpath("data") .. util.path.sep .. "workspaces",
 
+    -- to change directory for all of nvim (:cd) or only for the current window (:lcd)
+    -- if you are unsure, you likely want this to be true.
+    global_cd = true,
+
     -- lists of hooks to run after specific actions
     -- hooks can be a lua function or a vim command (string)
     -- if only one hook is needed, the list may be omitted
