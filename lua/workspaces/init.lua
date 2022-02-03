@@ -9,6 +9,9 @@ local config = {
     -- to change directory for nvim (:cd), or only for window (:lcd)
     global_cd = true,
 
+    -- sort the list of workspaces after loading from the workspaces path
+    sort = true,
+
     -- lists of hooks to run after specific actions
     -- hooks can be a lua function or a vim command (string)
     hooks = {
@@ -41,6 +44,12 @@ local load_workspaces = function()
             name = data[1],
             path = data[2],
         })
+    end
+
+    if config.sort and #workspaces > 0 then
+        table.sort(workspaces, function(a, b)
+            return a.name < b.name
+        end)
     end
 
     return workspaces

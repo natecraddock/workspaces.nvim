@@ -2,6 +2,12 @@
 
 # master
 
+* **feat** add `sort` config option
+
+  Set to true by default. Sorts the list of workspaces by name after loading
+  from the workspaces file. All lists of workspaces (commands, completions,
+  .get() api) will be sorted.
+
 * **feat** add `global_cd` config option
 
   This may be used to only change directory in the current window rather than

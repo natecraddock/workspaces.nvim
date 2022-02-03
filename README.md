@@ -41,6 +41,9 @@ The setup function accepts a table to modify the default configuration:
     -- if you are unsure, you likely want this to be true.
     global_cd = true,
 
+    -- sort the list of workspaces by name after loading from the workspaces path.
+    sort = true,
+
     -- lists of hooks to run after specific actions
     -- hooks can be a lua function or a vim command (string)
     -- if only one hook is needed, the list may be omitted
