@@ -80,11 +80,13 @@ end
 
 local M = {}
 
--- add a workspace to the workspaces list
--- path is optional, if omitted the current directory will be used
--- name is optional, if omitted the path will be used
--- if path is nil and name looks like a path, then name will be used
--- as the path
+---add a workspace to the workspaces list
+---path is optional, if omitted the current directory will be used
+---name is optional, if omitted the path will be used
+---if path is nil and name looks like a path, then name will be used
+---as the path
+---@param path string|nil
+---@param name string|nil
 M.add = function(path, name)
     if not path and not name then
         -- none given, use current directory and name
@@ -129,6 +131,8 @@ M.add = function(path, name)
 end
 
 -- TODO: make this the default api in v1.0
+---@param name string|nil
+---@param path string|nil
 M.add_swap = function(name, path)
     M.add(path, name)
 end
@@ -148,8 +152,9 @@ local find = function(name)
     return nil
 end
 
--- remove a workspace from the workspaces list by name
--- name is optional, if omitted the current directory will be used
+---remove a workspace from the workspaces list by name
+---name is optional, if omitted the current directory will be used
+---@param name string|nil
 M.remove = function(name)
     local workspace, i = find(name)
     if not workspace then
@@ -163,8 +168,9 @@ M.remove = function(name)
     run_hooks(config.hooks.remove)
 end
 
--- returns the list of all workspaces
--- each workspace is formatted as a { name = "", path = "" } table
+---returns the list of all workspaces
+---each workspace is formatted as a { name = "", path = "" } table
+---@return table
 M.get = function()
     return load_workspaces()
 end
@@ -181,8 +187,9 @@ end
 
 local current_workspace = nil
 
--- opens the named workspace
--- this changes the current directory to the path specified in the workspace entry
+---opens the named workspace
+---this changes the current directory to the path specified in the workspace entry
+---@param name string
 M.open = function(name)
     if not name then
         vim.notify(string.format("workspaces.nvim: open requires an argument"), levels.ERROR)
@@ -208,8 +215,8 @@ M.open = function(name)
     run_hooks(config.hooks.open)
 end
 
----@returns string|nil
 ---returns the name of the current workspace
+---@return string|nil
 M.name = function()
     return current_workspace
 end

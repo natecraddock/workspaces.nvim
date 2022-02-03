@@ -50,7 +50,6 @@ configuration. >
         },
     })
 <
-
 ==============================================================================
 USAGE                                                       *workspaces-usage*
 
@@ -111,6 +110,9 @@ API                                                           *workspaces-api*
 
 local workspaces = require("workspaces")
 
+workspaces.setup(opts: table) ~
+Setup custom configuration and user commands.
+
 workspaces.add(path: string, name: string) ~
 Add a workspace with the given name and path. If name or path are nil, the
 current directory will be used to set the missing parameter.
@@ -124,11 +126,11 @@ Print all workspaces to the commandline.
 workspaces.open(name: string) ~
 Open a workspace with the given name
 
-workspaces.get() ~
+workspaces.get(): table ~
 Returns a list (table) of all workspaces in { name: string, path: string }
 pairs.
 
-workspaces.name() ~
+workspaces.name(): string|nil ~
 Returns the name of the current workspace or nil if no workspace is open.
 
 ==============================================================================
@@ -155,7 +157,6 @@ setup function. >
       }
     })
 <
-
 After registration, the picker is available via |:Telescope workspaces|.
 
 ==============================================================================

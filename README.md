@@ -102,9 +102,9 @@ workspaces.list()
 
 workspaces.open(name: string)
 
-workspaces.get()
+workspaces.get(): table
 
-workspaces.name()
+workspaces.name(): string|nil
 ```
 
 See `:h workspaces-api` for more information on the API functions.
