@@ -148,6 +148,13 @@ Remember that more than one hook is allowed, so these may be combined in
 creative ways! Hooks may also be registered after adding and removing
 workspaces, not only after opening a workspace.
 
+See [Configuration
+Recipes](https://github.com/natecraddock/workspaces.nvim/wiki/Configuration-Recipes)
+and
+[Troubleshooting](https://github.com/natecraddock/workspaces.nvim/wiki/Troubleshooting)
+on the wiki for more inspiration and help configuring the plugin. Feel free to
+contribute your setup!
+
 ### fzf file finder
 
 Change directory to the workspace and run fzf.
