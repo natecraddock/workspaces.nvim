@@ -90,6 +90,26 @@ The setup function registers the following user commands:
 
 See `:h workspaces-usage` for more information on the commands.
 
+## Auto reload NvimTree
+
+Just add this option in your workspaces setup:
+```lua
+hooks = {
+  open = {
+    "NvimTreeRefresh",
+  },
+}
+```
+
+And activate this property in the nvimTree setup:
+```lua
+require("nvim-tree").setup({
+  update_cwd = true,
+})
+```
+
+Remember: If you're using lazy-loading you will get an error, if this is your case, only activate the nvimTree option.
+
 ## Lua API
 
 The workspaces commands may also be accessed from Lua
