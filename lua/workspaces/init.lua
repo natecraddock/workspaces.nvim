@@ -64,6 +64,16 @@ local store_workspaces = function(workspaces)
     util.file.write(config.path, data)
 end
 
+local cwd = function()
+    return vim.fn.fnamemodify(vim.fn.getcwd(), ":p")
+end
+
+local direq = function(a, b)
+    a = vim.fn.fnamemodify(a, ":p")
+    b = vim.fn.fnamemodify(b, ":p")
+    return a == b
+end
+
 local run_hook = function(hook)
     if type(hook) == "function" then
         hook()
@@ -99,19 +109,21 @@ local M = {}
 M.add = function(path, name)
     if not path and not name then
         -- none given, use current directory and name
-        path = vim.fn.getcwd()
-        name = util.path.basename(path)
-    elseif not path then
-        if string.find(name, util.path.sep) then
+        path = cwd()
+        name = util.path.basename(path, { basedir = true })
+    elseif not name then
+        if string.find(path, util.path.sep) then
             -- only path given, extract name from path
-            path = vim.fn.fnamemodify(name, ":p")
-            name = util.path.basename(path)
+            path = vim.fn.fnamemodify(path, ":p")
+            name = util.path.basename(path, { basedir = true })
         else
             -- name given, use cwd as path
-            path = vim.fn.getcwd()
+            name = path
+            path = cwd()
         end
     else
         -- both given, ensure the path is expanded
+        name, path = path, name
         path = vim.fn.fnamemodify(path, ":p")
     end
 
@@ -140,20 +152,28 @@ M.add = function(path, name)
 end
 
 -- TODO: make this the default api in v1.0
+-- currently it is a mess trying to get it to conform to the old api
 ---@param name string|nil
 ---@param path string|nil
 M.add_swap = function(name, path)
-    M.add(path, name)
+    if name and path then
+        M.add(name, path)
+    elseif name and not path then
+        M.add(name, path)
+    else
+        M.add(path, name)
+    end
 end
 
 local find = function(name)
+    local path = cwd()
     if not name then
-        name = util.path.basename(vim.fn.getcwd())
+        name = util.path.basename(path)
     end
 
     local workspaces = load_workspaces()
     for i, workspace in ipairs(workspaces) do
-        if workspace.path == name or workspace.name == name then
+        if direq(workspace.path, path) or workspace.name == name then
             return workspace, i
         end
     end
@@ -167,6 +187,7 @@ end
 M.remove = function(name)
     local workspace, i = find(name)
     if not workspace then
+        if not name then return end
         vim.notify(string.format("workspaces.nvim: workspace '%s' does not exist", name), levels.WARN)
         return
     end
@@ -288,7 +309,7 @@ end
 M.parse_args = function(subcommand, arg1, arg2)
     vim.notify("The command :Workspaces [add|remove|list|open] is deprecated and will be removed in v1.0. Use :Workspaces[Add|Remove|List|Open] instead.", levels.WARN)
     if subcommand == "add" then
-        M.add(arg2, arg1)
+        M.add(arg1, arg2)
     elseif subcommand == "remove" then
         M.remove(arg1)
     elseif subcommand == "list" then
