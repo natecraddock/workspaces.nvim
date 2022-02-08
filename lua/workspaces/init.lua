@@ -42,7 +42,7 @@ local load_workspaces = function()
         local data = vim.split(line, "\0")
         table.insert(workspaces, {
             name = data[1],
-            path = data[2],
+            path = vim.fn.fnamemodify(data[2], ":p"),
         })
     end
 
