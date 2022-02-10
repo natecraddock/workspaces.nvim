@@ -99,6 +99,11 @@ commands and Lua functions. See |workspaces-examples| for reference. If the
 hook is a Lua function, it will be passed the workspace name and workspace
 path as parameters.
 
+If a Lua function hook returns false, any other registered hooks in the list
+will be skipped. Furthermore, if the hook is an open_pre hook and returns
+false, the directory will not be changed and any registered post-open hooks
+will not be run.
+
 add ~
 run hooks after adding a workspace
 

@@ -1,6 +1,13 @@
-# Changelog
-
 # master
+
+# 0.2
+
+* **feat**: handle aborting Lua function hooks
+
+  If a Lua function hook returns false, any other registered hooks in the list
+  will be skipped. Furthermore, if the hook is an open_pre hook and returns
+  false, the directory will not be changed and any registered post-open hooks
+  will not be run. This is also to allow more flexibility in hooks.
 
 * **feat**: pass workspace name and path to Lua function hooks
 
@@ -35,4 +42,4 @@
 
 * **feat**: add `open_pre` hook support.
 
-# v0.1 Initial Release
+# 0.1 Initial Release

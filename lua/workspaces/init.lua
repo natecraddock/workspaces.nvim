@@ -76,12 +76,14 @@ end
 
 local run_hook = function(hook, name, path)
     if type(hook) == "function" then
-        hook(name, path)
+        if hook(name, path) == false then return false end
     elseif type(hook) == "string" then
         vim.cmd(hook)
     else
         vim.notify(string.format("workspaces.nvim: invalid hook '%s'", hook), levels.ERROR)
     end
+
+    return true
 end
 
 -- given a list of hooks, execute each in the order given
@@ -90,11 +92,13 @@ local run_hooks = function(hooks, name, path)
 
     if type(hooks) == "table" then
         for _, hook in ipairs(hooks) do
-            run_hook(hook, name, path)
+            if run_hook(hook, name, path) == false then return false end
         end
     else
-        run_hook(hooks, name, path)
+        if run_hook(hooks, name, path) == false then return false end
     end
+
+    return true
 end
 
 local M = {}
@@ -233,9 +237,12 @@ M.open = function(name)
         return
     end
 
-    -- change directory
-    run_hooks(config.hooks.open_pre, workspace.name, workspace.path)
+    if run_hooks(config.hooks.open_pre, workspace.name, workspace.path) == false then
+        -- if any hooks aborted, then do not change directory
+        return
+    end
 
+    -- change directory
     if config.global_cd then
         vim.api.nvim_set_current_dir(workspace.path)
     else
