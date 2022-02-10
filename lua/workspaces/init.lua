@@ -74,9 +74,9 @@ local direq = function(a, b)
     return a == b
 end
 
-local run_hook = function(hook)
+local run_hook = function(hook, name, path)
     if type(hook) == "function" then
-        hook()
+        hook(name, path)
     elseif type(hook) == "string" then
         vim.cmd(hook)
     else
@@ -85,15 +85,15 @@ local run_hook = function(hook)
 end
 
 -- given a list of hooks, execute each in the order given
-local run_hooks = function(hooks)
+local run_hooks = function(hooks, name, path)
     if not hooks then return end
 
     if type(hooks) == "table" then
         for _, hook in ipairs(hooks) do
-            run_hook(hook)
+            run_hook(hook, name, path)
         end
     else
-        run_hook(hooks)
+        run_hook(hooks, name, path)
     end
 end
 
@@ -148,7 +148,7 @@ M.add = function(path, name)
     })
 
     store_workspaces(workspaces)
-    run_hooks(config.hooks.add)
+    run_hooks(config.hooks.add, name, path)
 end
 
 -- TODO: make this the default api in v1.0
@@ -195,7 +195,8 @@ M.remove = function(name)
     local workspaces = load_workspaces()
     table.remove(workspaces, i)
     store_workspaces(workspaces)
-    run_hooks(config.hooks.remove)
+
+    run_hooks(config.hooks.remove, workspace.name, workspace.path)
 end
 
 ---returns the list of all workspaces
@@ -233,7 +234,7 @@ M.open = function(name)
     end
 
     -- change directory
-    run_hooks(config.hooks.open_pre)
+    run_hooks(config.hooks.open_pre, workspace.name, workspace.path)
 
     if config.global_cd then
         vim.api.nvim_set_current_dir(workspace.path)
@@ -242,7 +243,7 @@ M.open = function(name)
     end
 
     current_workspace = workspace.name
-    run_hooks(config.hooks.open)
+    run_hooks(config.hooks.open, workspace.name, workspace.path)
 end
 
 ---returns the name of the current workspace

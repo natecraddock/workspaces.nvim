@@ -95,7 +95,9 @@ There are 4 types of hooks that can be registered in three categories: add,
 remove, and open.
 
 Each hook may be either a single command or Lua function, or a list of
-commands and Lua functions. See |workspaces-examples| for reference.
+commands and Lua functions. See |workspaces-examples| for reference. If the
+hook is a Lua function, it will be passed the workspace name and workspace
+path as parameters.
 
 add ~
 run hooks after adding a workspace
