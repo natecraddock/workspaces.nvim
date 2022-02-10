@@ -27,15 +27,15 @@ local config = {
 -- * newline separated workspace entries
 -- * NULL (\0) separated (name, path) pairs
 local load_workspaces = function()
-    local data = util.file.read(config.path)
+    local file = util.file.read(config.path)
 
     -- if the file has not yet been created, add an empty file
-    if not data then
+    if not file then
         util.file.write(config.path, "")
-        data = util.file.read(config.path)
+        file = util.file.read(config.path)
     end
 
-    local lines = vim.split(data, "\n", { trimempty = true })
+    local lines = vim.split(file, "\n", { trimempty = true })
 
     local workspaces = {}
     for _, line in ipairs(lines) do
@@ -226,7 +226,7 @@ M.open = function(name)
         return
     end
 
-    local workspace, i = find(name)
+    local workspace, _ = find(name)
     if not workspace then
         vim.notify(string.format("workspaces.nvim: workspace '%s' does not exist", name), levels.WARN)
         return
