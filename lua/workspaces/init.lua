@@ -169,15 +169,14 @@ M.add_swap = function(name, path)
     end
 end
 
-local find = function(name)
-    local path = cwd()
+local find = function(name, path)
     if not name then
         name = util.path.basename(path)
     end
 
     local workspaces = load_workspaces()
     for i, workspace in ipairs(workspaces) do
-        if direq(workspace.path, path) or workspace.name == name then
+        if workspace.name == name or (path and direq(workspace.path, path)) then
             return workspace, i
         end
     end
@@ -189,7 +188,8 @@ end
 ---name is optional, if omitted the current directory will be used
 ---@param name string|nil
 M.remove = function(name)
-    local workspace, i = find(name)
+    local path = cwd()
+    local workspace, i = find(name, path)
     if not workspace then
         if not name then return end
         vim.notify(string.format("workspaces.nvim: workspace '%s' does not exist", name), levels.WARN)
