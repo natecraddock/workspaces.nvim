@@ -114,12 +114,12 @@ M.add = function(path, name)
     if not path and not name then
         -- none given, use current directory and name
         path = cwd()
-        name = util.path.basename(path, { basedir = true })
+        name = util.path.basename(path)
     elseif not name then
         if string.find(path, util.path.sep) then
             -- only path given, extract name from path
             path = vim.fn.fnamemodify(path, ":p")
-            name = util.path.basename(path, { basedir = true })
+            name = util.path.basename(path)
         else
             -- name given, use cwd as path
             name = path

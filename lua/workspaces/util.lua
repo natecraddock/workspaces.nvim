@@ -17,13 +17,10 @@ M.path.sep = (function()
     end
 end)()
 
-M.path.basename = function(path_str, opts)
-    opts = opts or {}
-    if opts.basedir then
-        -- remove ending /
-        if string.sub(path_str, #path_str, #path_str) == M.path.sep then
-            path_str = string.sub(path_str, 1, #path_str - 1)
-        end
+M.path.basename = function(path_str)
+    -- remove ending /
+    if string.sub(path_str, #path_str, #path_str) == M.path.sep then
+        path_str = string.sub(path_str, 1, #path_str - 1)
     end
     local parts = vim.split(path_str, M.path.sep)
     return parts[#parts]
