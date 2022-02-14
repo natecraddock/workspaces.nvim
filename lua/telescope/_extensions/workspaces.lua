@@ -52,7 +52,16 @@ local workspaces_picker = function(opts)
 
         attach_mappings = function(prompt_bufnr, _)
             actions.select_default:replace(function()
-                actions._close(prompt_bufnr, keep_insert)
+                actions.close(prompt_bufnr)
+
+                -- we could use actions._close(prompt_bufnr, keep_insert), but
+                -- this seems to have race conditions.
+                -- so instead we schedule a function to run in the future to
+                -- maintain insert mode after telescope closes if desired.
+                if keep_insert then
+                    vim.schedule(function() vim.cmd("startinsert") end)
+                end
+
                 local workspace = action_state.get_selected_entry().value
                 if workspace and workspace ~= "" then
                     workspaces.open(workspace.name)
