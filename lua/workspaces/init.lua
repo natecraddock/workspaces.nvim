@@ -1,6 +1,5 @@
 local util = require("workspaces.util")
-
-local levels = vim.log.levels
+local notify = util.notify
 
 local config = {
     -- path to a file to store workspaces data in
@@ -83,7 +82,7 @@ local run_hook = function(hook, name, path)
     elseif type(hook) == "string" then
         vim.cmd(hook)
     else
-        vim.notify(string.format("Invalid workspace hook '%s'", hook), levels.ERROR)
+        notify.err(string.format("Invalid workspace hook '%s'", hook))
     end
 
     return true
@@ -136,7 +135,7 @@ M.add = function(path, name)
 
     -- ensure path is valid
     if vim.fn.isdirectory(path) == 0 then
-        vim.notify(string.format("Path '%s' does not exist", path), levels.ERROR)
+        notify.err(string.format("Path '%s' does not exist", path))
         return
     end
 
@@ -144,7 +143,7 @@ M.add = function(path, name)
     local workspaces = load_workspaces()
     for _, workspace in ipairs(workspaces) do
         if workspace.name == name or workspace.path == path then
-            vim.notify(string.format("Workspace '%s' is already registered", workspace.name), levels.WARN)
+            notify.warn(string.format("Workspace '%s' is already registered", workspace.name))
             return
         end
     end
@@ -158,7 +157,7 @@ M.add = function(path, name)
     run_hooks(config.hooks.add, name, path)
 
     if config.notify_info then
-        vim.notify(string.format("workspace [%s -> %s] added", name, path), levels.INFO)
+        notify.info(string.format("workspace [%s -> %s] added", name, path))
     end
 end
 
@@ -199,7 +198,7 @@ M.remove = function(name)
     local workspace, i = find(name, path)
     if not workspace then
         if not name then return end
-        vim.notify(string.format("Workspace '%s' does not exist", name), levels.WARN)
+        notify.warn(string.format("Workspace '%s' does not exist", name))
         return
     end
 
@@ -210,7 +209,7 @@ M.remove = function(name)
     run_hooks(config.hooks.remove, workspace.name, workspace.path)
 
     if config.notify_info then
-        vim.notify(string.format("workspace [%s -> %s] removed", workspace.name, workspace.path), levels.INFO)
+        notify.info(string.format("workspace [%s -> %s] removed", workspace.name, workspace.path))
     end
 end
 
@@ -227,7 +226,7 @@ M.list = function()
     local ending = "\n"
 
     if #workspaces == 0 then
-        vim.notify("No workspaces are registered yet. Add one with :WorkspacesAdd", levels.WARN)
+        notify.warn("No workspaces are registered yet. Add one with :WorkspacesAdd")
         return
     end
 
@@ -244,13 +243,13 @@ local current_workspace = nil
 ---@param name string
 M.open = function(name)
     if not name then
-        vim.notify(string.format("Open requires an argument"), levels.ERROR)
+        notify.err(string.format("Open requires an argument"))
         return
     end
 
     local workspace, _ = find(name)
     if not workspace then
-        vim.notify(string.format("Workspace '%s' does not exist", name), levels.WARN)
+        notify.warn(string.format("Workspace '%s' does not exist", name))
         return
     end
 
@@ -332,7 +331,7 @@ end
 -- subcommand is one of {add, remove, list, open}
 -- and arg1 and arg2 are optional. If set arg1 is a name and arg2 is a path
 M.parse_args = function(subcommand, arg1, arg2)
-    vim.notify("The command :Workspaces [add|remove|list|open] is deprecated and will be removed in v1.0. Use :Workspaces[Add|Remove|List|Open] instead.", levels.WARN)
+    notify.warn("The command :Workspaces [add|remove|list|open] is deprecated and will be removed in v1.0. Use :Workspaces[Add|Remove|List|Open] instead.")
     if subcommand == "add" then
         M.add(arg1, arg2)
     elseif subcommand == "remove" then
@@ -342,7 +341,7 @@ M.parse_args = function(subcommand, arg1, arg2)
     elseif subcommand == "open" then
         M.open(arg1)
     else
-        vim.notify(string.format("Invalid subcommand '%s'", subcommand), levels.ERROR)
+        notify.err(string.format("Invalid subcommand '%s'", subcommand))
     end
 end
 

@@ -1,6 +1,21 @@
 local M = {}
 
+local levels = vim.log.levels
 local uv = vim.loop
+
+-- vim.notify wrappers
+M.notify = {}
+M.notify.info = function(message)
+    vim.notify(message, levels.INFO, { title = "workspaces.nvim" })
+end
+
+M.notify.warn = function(message)
+    vim.notify(message, levels.WARN, { title = "workspaces.nvim" })
+end
+
+M.notify.err = function(message)
+    vim.notify(message, levels.ERROR, { title = "workspaces.nvim" })
+end
 
 -- system dependent path separator from plenary.nvim
 M.path = {}
