@@ -238,12 +238,22 @@ end
 
 local current_workspace = nil
 
+local select_fn = function(item, index)
+    -- prevent an infinite open loop
+    if not item then return end
+    M.open(item.name)
+end
+
 ---opens the named workspace
 ---this changes the current directory to the path specified in the workspace entry
----@param name string
+---@param name string|nil
 M.open = function(name)
     if not name then
-        notify.err(string.format("Open requires an argument"))
+        local workspaces = load_workspaces()
+        vim.ui.select(workspaces, {
+            prompt = "Select workspace to open:",
+            format_item = function(item) return item.name end,
+        }, select_fn)
         return
     end
 
@@ -356,7 +366,7 @@ M.setup = function(opts)
     command! -nargs=* -complete=file WorkspacesAdd lua require("workspaces").add_swap(<f-args>)
     command! -nargs=? -complete=customlist,v:lua.require'workspaces'.workspace_complete WorkspacesRemove lua require("workspaces").remove(<f-args>)
     command! WorkspacesList lua require("workspaces").list()
-    command! -nargs=1 -complete=customlist,v:lua.require'workspaces'.workspace_complete WorkspacesOpen lua require("workspaces").open(<f-args>)
+    command! -nargs=? -complete=customlist,v:lua.require'workspaces'.workspace_complete WorkspacesOpen lua require("workspaces").open(<f-args>)
     ]]
 end
 
