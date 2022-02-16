@@ -44,6 +44,9 @@ The setup function accepts a table to modify the default configuration:
     -- sort the list of workspaces by name after loading from the workspaces path.
     sort = true,
 
+    -- enable info-level notifications after adding or removing a workspace
+    notify_info = true,
+
     -- lists of hooks to run after specific actions
     -- hooks can be a lua function or a vim command (string)
     -- if only one hook is needed, the list may be omitted

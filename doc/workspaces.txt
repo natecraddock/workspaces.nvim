@@ -43,6 +43,10 @@ configuration. >
         -- workspaces path.
         sort = true,
 
+        -- enable info-level notifications after adding or removing a
+        -- workspace. disable to only be notified for warnings or errors.
+        notify_info = true,
+
         -- lists of hooks to run after specific actions
         -- hooks can be a lua function or a vim command (string)
         -- if only one hook is needed, the list may be omitted

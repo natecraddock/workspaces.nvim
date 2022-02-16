@@ -12,6 +12,9 @@ local config = {
     -- sort the list of workspaces after loading from the workspaces path
     sort = true,
 
+    -- enable info-level notifications after adding or removing a workspace
+    notify_info = true,
+
     -- lists of hooks to run after specific actions
     -- hooks can be a lua function or a vim command (string)
     hooks = {
@@ -133,7 +136,7 @@ M.add = function(path, name)
 
     -- ensure path is valid
     if vim.fn.isdirectory(path) == 0 then
-        vim.notify(string.format("workspaces.nvim: path `%s` does not exist", path), levels.ERROR)
+        vim.notify(string.format("workspaces.nvim: path '%s' does not exist", path), levels.ERROR)
         return
     end
 
@@ -153,6 +156,10 @@ M.add = function(path, name)
 
     store_workspaces(workspaces)
     run_hooks(config.hooks.add, name, path)
+
+    if config.notify_info then
+        vim.notify(string.format("workspace [%s -> %s] added", name, path), levels.INFO)
+    end
 end
 
 -- TODO: make this the default api in v1.0
@@ -201,6 +208,10 @@ M.remove = function(name)
     store_workspaces(workspaces)
 
     run_hooks(config.hooks.remove, workspace.name, workspace.path)
+
+    if config.notify_info then
+        vim.notify(string.format("workspace [%s -> %s] removed", workspace.name, workspace.path), levels.INFO)
+    end
 end
 
 ---returns the list of all workspaces
