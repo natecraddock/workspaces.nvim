@@ -225,6 +225,12 @@ end
 M.list = function()
     local workspaces = load_workspaces()
     local ending = "\n"
+
+    if #workspaces == 0 then
+        vim.notify("No workspaces are registered yet. Add one with :WorkspacesAdd", levels.WARN)
+        return
+    end
+
     for i, workspace in ipairs(workspaces) do
         if #workspaces == i then ending = "" end
         print(string.format("%s %s%s", workspace.name, workspace.path, ending))
