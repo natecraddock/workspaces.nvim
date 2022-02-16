@@ -62,7 +62,10 @@ local workspaces_picker = function(opts)
                     vim.schedule(function() vim.cmd("startinsert") end)
                 end
 
-                local workspace = action_state.get_selected_entry().value
+                local selected = action_state.get_selected_entry()
+                if not selected then return end
+
+                local workspace = selected.value
                 if workspace and workspace ~= "" then
                     workspaces.open(workspace.name)
                 end
