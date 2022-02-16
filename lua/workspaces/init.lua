@@ -83,7 +83,7 @@ local run_hook = function(hook, name, path)
     elseif type(hook) == "string" then
         vim.cmd(hook)
     else
-        vim.notify(string.format("workspaces.nvim: invalid hook '%s'", hook), levels.ERROR)
+        vim.notify(string.format("Invalid workspace hook '%s'", hook), levels.ERROR)
     end
 
     return true
@@ -136,7 +136,7 @@ M.add = function(path, name)
 
     -- ensure path is valid
     if vim.fn.isdirectory(path) == 0 then
-        vim.notify(string.format("workspaces.nvim: path '%s' does not exist", path), levels.ERROR)
+        vim.notify(string.format("Path '%s' does not exist", path), levels.ERROR)
         return
     end
 
@@ -144,7 +144,7 @@ M.add = function(path, name)
     local workspaces = load_workspaces()
     for _, workspace in ipairs(workspaces) do
         if workspace.name == name or workspace.path == path then
-            vim.notify("workspaces.nvim: workspace is already registered", levels.WARN)
+            vim.notify(string.format("Workspace '%s' is already registered", workspace.name), levels.WARN)
             return
         end
     end
@@ -199,7 +199,7 @@ M.remove = function(name)
     local workspace, i = find(name, path)
     if not workspace then
         if not name then return end
-        vim.notify(string.format("workspaces.nvim: workspace '%s' does not exist", name), levels.WARN)
+        vim.notify(string.format("Workspace '%s' does not exist", name), levels.WARN)
         return
     end
 
@@ -244,13 +244,13 @@ local current_workspace = nil
 ---@param name string
 M.open = function(name)
     if not name then
-        vim.notify(string.format("workspaces.nvim: open requires an argument"), levels.ERROR)
+        vim.notify(string.format("Open requires an argument"), levels.ERROR)
         return
     end
 
     local workspace, _ = find(name)
     if not workspace then
-        vim.notify(string.format("workspaces.nvim: workspace '%s' does not exist", name), levels.WARN)
+        vim.notify(string.format("Workspace '%s' does not exist", name), levels.WARN)
         return
     end
 
@@ -342,7 +342,7 @@ M.parse_args = function(subcommand, arg1, arg2)
     elseif subcommand == "open" then
         M.open(arg1)
     else
-        vim.notify(string.format("workspaces.nvim: invalid subcommand '%s'", subcommand), levels.ERROR)
+        vim.notify(string.format("Invalid subcommand '%s'", subcommand), levels.ERROR)
     end
 end
 
