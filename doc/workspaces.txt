@@ -86,7 +86,8 @@ Prints all workspaces.
 
 :WorkspacesOpen [name]                                 *:Workspaces open*
 
-Opens the named workspace.
+Opens the named workspace. If no name is given, vim.ui.select() will be used
+as a selection interface for opening a workspace.
 
 All commands that take a workspace name (|:WorkspacesOpen| and
 |:WorkspacesRemove|) offer workspace name completion. |:WorkspacesAdd| offers
@@ -138,8 +139,9 @@ Remove a workspace with the given name.
 workspaces.list() ~
 Print all workspaces to the commandline.
 
-workspaces.open(name: string) ~
-Open a workspace with the given name
+workspaces.open(name: string|nil) ~
+Open a workspace with the given name. If name is nil, vim.ui.select() will be
+used as a selection interface for opening a workspace.
 
 workspaces.get(): table ~
 Returns a list (table) of all workspaces in { name: string, path: string }
