@@ -161,7 +161,8 @@ M.add = function(path, name)
     end
 end
 
--- TODO: make this the default api in v1.0
+-- This function is a legacy of the older api, but it's not worth
+-- it to try to merge this with the add function. It works fine, don't touch it!
 -- currently it is a mess trying to get it to conform to the old api
 ---@param name string|nil
 ---@param path string|nil
@@ -285,15 +286,6 @@ M.name = function()
     return current_workspace
 end
 
-local subcommands = {"add", "remove", "list", "open"}
-
-local subcommand_complete = function(lead)
-    return vim.tbl_filter(function(item)
-        return vim.startswith(item, lead)
-    end, subcommands)
-end
-
-
 local workspace_name_complete = function(lead)
     local workspaces = vim.tbl_filter(function(workspace)
         if lead == "" then return true end
@@ -310,59 +302,12 @@ M.workspace_complete = function(lead, _, _)
     return workspace_name_complete(lead)
 end
 
--- DEPRECATED: will be removed in v1.0
--- used to provide autocomplete for user commands
-M.complete = function(lead, line, pos)
-    -- remove the command name from the front
-    line = string.sub(line, #"Workspaces " + 1)
-    pos = pos - #"Workspaces "
-
-    -- completion for subcommands
-    if #line == 0 then return subcommands end
-    local index = string.find(line, " ")
-    if not index or pos < index then
-        return subcommand_complete(lead)
-    end
-
-    local subcommand = string.sub(line, 1, index - 1)
-
-    -- completion not provided past 2 args
-    if string.find(line, " ", index + 1) then return {} end
-
-    -- subcommand completion for remove and open
-    if subcommand == "remove" or subcommand == "open" then
-        return workspace_name_complete(lead)
-    end
-
-    return {}
-end
-
--- entry point to the api from user commands
--- subcommand is one of {add, remove, list, open}
--- and arg1 and arg2 are optional. If set arg1 is a name and arg2 is a path
-M.parse_args = function(subcommand, arg1, arg2)
-    notify.warn("The command :Workspaces [add|remove|list|open] is deprecated and will be removed in v1.0. Use :Workspaces[Add|Remove|List|Open] instead.")
-    if subcommand == "add" then
-        M.add(arg1, arg2)
-    elseif subcommand == "remove" then
-        M.remove(arg1)
-    elseif subcommand == "list" then
-        M.list()
-    elseif subcommand == "open" then
-        M.open(arg1)
-    else
-        notify.err(string.format("Invalid subcommand '%s'", subcommand))
-    end
-end
-
 -- run to setup user commands and custom config
 M.setup = function(opts)
     opts = opts or {}
     config = vim.tbl_deep_extend("force", {}, config, opts)
 
     vim.cmd[[
-    command! -nargs=+ -complete=customlist,v:lua.require'workspaces'.complete Workspaces lua require("workspaces").parse_args(<f-args>)
-
     command! -nargs=* -complete=file WorkspacesAdd lua require("workspaces").add_swap(<f-args>)
     command! -nargs=? -complete=customlist,v:lua.require'workspaces'.workspace_complete WorkspacesRemove lua require("workspaces").remove(<f-args>)
     command! WorkspacesList lua require("workspaces").list()
