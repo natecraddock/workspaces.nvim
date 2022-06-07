@@ -61,7 +61,7 @@ configuration. >
 ==============================================================================
 USAGE                                                       *workspaces-usage*
 
-:WorkspacesAdd [name] [path]                            *:Workspaces add*
+:WorkspacesAdd [name] [path]                            *WorkspacesAdd*
 
 If both name and path are omitted, the current working directory will be
 registered as a workspace, with the last path segment as the name.
@@ -73,18 +73,18 @@ directory will be registered as a workspace, with the given name.
 if both name and path are provided, the workspace with name and path will be
 registered.
 
-:WorkspacesRemove [name]                             *:Workspaces remove*
+:WorkspacesRemove [name]                             *WorkspacesRemove*
 
 If name is omitted, the workspace registered in the current working
 directory will be removed, if it exists.
 
 If name is provided, the specified workspace will be removed.
 
-:WorkspacesList                                        *:Workspaces list*
+:WorkspacesList                                        *WorkspacesList*
 
 Prints all workspaces.
 
-:WorkspacesOpen [name]                                 *:Workspaces open*
+:WorkspacesOpen [name]                                 *WorkspacesOpen*
 
 Opens the named workspace. If no name is given, vim.ui.select() will be used
 as a selection interface for opening a workspace.
