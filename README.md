@@ -19,6 +19,10 @@ extension are provided to make it simple to open a workspace, but what that
 means beyond changing directories is left up to you by customizing the hooks.
 See [Examples](#examples) for inspiration on hooks!
 
+Note that this plugin is small in scope and complexity. It has been stable for a
+long time. Just because I am not making changes doesn't mean it's been
+abandoned! It was designed to be small and stable, and it will stay that way.
+
 ## Installation
 
 Install with your favorite neovim package manager. Be sure to run the setup
