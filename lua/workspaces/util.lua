@@ -3,6 +3,11 @@ local M = {}
 local levels = vim.log.levels
 local uv = vim.loop
 
+-- get datetime
+M.date = function()
+    return os.date("%Y-%m-%dT%H:%M:%S")
+end
+
 -- vim.notify wrappers
 M.notify = {}
 M.notify.info = function(message)

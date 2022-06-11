@@ -45,6 +45,7 @@ local load_workspaces = function()
         table.insert(workspaces, {
             name = data[1],
             path = vim.fn.fnamemodify(data[2], ":p"),
+            last_opened = data[3],
         })
     end
 
@@ -61,7 +62,9 @@ end
 local store_workspaces = function(workspaces)
     local data = ""
     for _, workspace in ipairs(workspaces) do
-        data = data .. string.format("%s\0%s\n", workspace.name, workspace.path)
+        -- not all workspaces have a date
+        local date_str = workspace.last_opened and "\0" .. workspace.last_opened or ""
+        data = data .. string.format("%s\0%s%s\n", workspace.name, workspace.path, date_str)
     end
     util.file.write(config.path, data)
 end
@@ -258,7 +261,7 @@ M.open = function(name)
         return
     end
 
-    local workspace, _ = find(name)
+    local workspace, index = find(name)
     if not workspace then
         notify.warn(string.format("Workspace '%s' does not exist", name))
         return
@@ -268,6 +271,11 @@ M.open = function(name)
         -- if any hooks aborted, then do not change directory
         return
     end
+
+    -- register this workspace as having been opened recently
+    local workspaces = load_workspaces()
+    workspaces[index].last_opened = util.date()
+    store_workspaces(workspaces)
 
     -- change directory
     if config.global_cd then
