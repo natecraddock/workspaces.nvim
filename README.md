@@ -6,8 +6,8 @@ workspaces.nvim provides a few simple commands for managing workspace
 directories in neovim. A workspace is a name and a path, and opening a workspace
 will set the current directory to the correct path.
 
-* Register a workspace with `:Workspaces add`
-* Open a registered workspace with `:Workspaces open [name]`
+* Register a workspace with `:WorkspacesAdd`
+* Open a registered workspace with `:WorkspacesOpen [name]`
 * Hooks may be registered to provide additional functionality
 * A telescope extension `:Telescope workspaces` is provided for fuzzy finding
   over workspaces
