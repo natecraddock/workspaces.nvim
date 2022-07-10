@@ -43,6 +43,9 @@ configuration. >
         -- workspaces path.
         sort = true,
 
+        -- sort by recent use rather than by name. requires sort to be true
+        mru_sort = true,
+
         -- enable info-level notifications after adding or removing a
         -- workspace. disable to only be notified for warnings or errors.
         notify_info = true,
@@ -145,7 +148,8 @@ workspaces.open(name: {string}|{nil})
     used as a selection interface for opening a workspace.
 
 workspaces.get(): {table}
-    Returns a list of all workspaces in { name: {string}, path: {string} }
+    Returns a list of all workspaces in { name: {string}, path: {string},
+                                          last_opened: {string} }
     pairs.
 
 workspaces.name(): {string}|{nil}

@@ -48,6 +48,9 @@ The setup function accepts a table to modify the default configuration:
     -- sort the list of workspaces by name after loading from the workspaces path.
     sort = true,
 
+    -- sort by recent use rather than by name. requires sort to be true
+    mru_sort = true,
+
     -- enable info-level notifications after adding or removing a workspace
     notify_info = true,
 

@@ -11,6 +11,9 @@ local config = {
     -- sort the list of workspaces after loading from the workspaces path
     sort = true,
 
+    -- sort by recent use rather than by name. requires sort to be true
+    mru_sort = true,
+
     -- enable info-level notifications after adding or removing a workspace
     notify_info = true,
 
@@ -51,7 +54,16 @@ local load_workspaces = function()
 
     if config.sort and #workspaces > 0 then
         table.sort(workspaces, function(a, b)
-            return a.name < b.name
+            if config.mru_sort then
+                if a.last_opened then
+                    if b.last_opened then return a.last_opened > b.last_opened end
+                    return true
+                else
+                    return a.name < b.name
+                end
+            else
+                return a.name < b.name
+            end
         end)
     end
 
