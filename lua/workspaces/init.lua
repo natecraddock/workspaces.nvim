@@ -58,6 +58,8 @@ local load_workspaces = function()
                 if a.last_opened then
                     if b.last_opened then return a.last_opened > b.last_opened end
                     return true
+	        elseif b.last_opened then
+		    return false
                 else
                     return a.name < b.name
                 end
