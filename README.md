@@ -148,10 +148,6 @@ require("telescope").setup({
 })
 ```
 
-## Demo
-
-https://user-images.githubusercontent.com/7967463/151685936-53c8e2f8-fca8-4a72-a710-58d41925c832.mp4
-
 ## Examples
 
 Remember that more than one hook is allowed, so these may be combined in
