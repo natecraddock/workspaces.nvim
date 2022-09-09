@@ -19,6 +19,7 @@ local config = {
 
     -- lists of hooks to run after specific actions
     -- hooks can be a lua function or a vim command (string)
+    -- lua hooks take a name, a path, and an optional state table
     hooks = {
         add = {},
         remove = {},
@@ -94,6 +95,10 @@ local direq = function(a, b)
     return a == b
 end
 
+---@param hook function|string
+---@param name string
+---@param path string
+---@param state table|nil
 local run_hook = function(hook, name, path, state)
     if type(hook) == "function" then
         if hook(name, path, state) == false then return false end
@@ -106,7 +111,11 @@ local run_hook = function(hook, name, path, state)
     return true
 end
 
--- given a list of hooks, execute each in the order given
+---given a list of hooks, execute each in the order given
+---@param hooks table|function|string
+---@param name string
+---@param path string
+---@param state table|nil
 local run_hooks = function(hooks, name, path, state)
     if not hooks then return end
 
