@@ -22,6 +22,7 @@ local config = {
     hooks = {
         add = {},
         remove = {},
+        rename = {},
         open_pre = {},
         open = {},
     },
@@ -93,9 +94,9 @@ local direq = function(a, b)
     return a == b
 end
 
-local run_hook = function(hook, name, path)
+local run_hook = function(hook, name, path, state)
     if type(hook) == "function" then
-        if hook(name, path) == false then return false end
+        if hook(name, path, state) == false then return false end
     elseif type(hook) == "string" then
         vim.cmd(hook)
     else
@@ -106,15 +107,15 @@ local run_hook = function(hook, name, path)
 end
 
 -- given a list of hooks, execute each in the order given
-local run_hooks = function(hooks, name, path)
+local run_hooks = function(hooks, name, path, state)
     if not hooks then return end
 
     if type(hooks) == "table" then
         for _, hook in ipairs(hooks) do
-            if run_hook(hook, name, path) == false then return false end
+            if run_hook(hook, name, path, state) == false then return false end
         end
     else
-        if run_hook(hooks, name, path) == false then return false end
+        if run_hook(hooks, name, path, state) == false then return false end
     end
 
     return true
@@ -231,6 +232,32 @@ M.remove = function(name)
     end
 end
 
+local current_workspace = nil
+
+---rename an existing workspace
+---@param name string
+---@param new_name string
+M.rename = function(name, new_name)
+    local workspace, i = find(name)
+    if not workspace or not i then
+        if not name then return end
+        notify.warn(string.format("Workspace '%s' does not exist", name))
+        return
+    end
+
+    workspace.name = new_name
+    local workspaces = load_workspaces()
+    workspaces[i] = workspace
+    store_workspaces(workspaces)
+
+    current_workspace = workspace.name
+    run_hooks(config.hooks.rename, workspace.name, workspace.path, { previous_name = name })
+
+    if config.notify_info then
+        notify.info(string.format("workspace [%s -> %s] renamed", workspace.name, workspace.path))
+    end
+end
+
 ---returns the list of all workspaces
 ---each workspace is formatted as a { name = "", path = "" } table
 ---@return table
@@ -253,8 +280,6 @@ M.list = function()
         print(string.format("%s %s%s", workspace.name, workspace.path, ending))
     end
 end
-
-local current_workspace = nil
 
 local select_fn = function(item, index)
     -- prevent an infinite open loop
