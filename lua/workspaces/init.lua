@@ -259,7 +259,10 @@ M.rename = function(name, new_name)
     workspaces[i] = workspace
     store_workspaces(workspaces)
 
-    current_workspace = workspace.name
+    if current_workspace == name then
+        current_workspace = workspace.name
+    end
+
     run_hooks(config.hooks.rename, workspace.name, workspace.path, { previous_name = name })
 
     if config.notify_info then
