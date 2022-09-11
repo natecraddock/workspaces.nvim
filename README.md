@@ -56,10 +56,12 @@ The setup function accepts a table to modify the default configuration:
 
     -- lists of hooks to run after specific actions
     -- hooks can be a lua function or a vim command (string)
+    -- lua hooks take a name, a path, and an optional state table
     -- if only one hook is needed, the list may be omitted
     hooks = {
         add = {},
         remove = {},
+        rename = {},
         open_pre = {},
         open = {},
     },
@@ -89,6 +91,10 @@ The setup function registers the following user commands:
 
   The workspace with the specified name will be removed.
 
+* `:WorkspacesRename [name] [new_name]`
+
+  The workspace with the specified name will be renamed to `new_name`.
+
 * `:WorkspacesList`
 
   Prints all workspaces.
@@ -110,6 +116,8 @@ local workspaces = require("workspaces")
 workspaces.add(path: string, name: string)
 
 workspaces.remove(name: string)
+
+workspaces.rename(name: string, new_name: string)
 
 workspaces.list()
 

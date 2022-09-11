@@ -3,6 +3,7 @@ local notify = util.notify
 
 local config = {
     -- path to a file to store workspaces data in
+    -- on a unix system this would be ~/.local/share/nvim/workspaces
     path = vim.fn.stdpath("data") .. util.path.sep .. "workspaces",
 
     -- to change directory for nvim (:cd), or only for window (:lcd)
@@ -20,6 +21,7 @@ local config = {
     -- lists of hooks to run after specific actions
     -- hooks can be a lua function or a vim command (string)
     -- lua hooks take a name, a path, and an optional state table
+    -- if only one hook is needed, the list may be omitted
     hooks = {
         add = {},
         remove = {},
@@ -366,12 +368,49 @@ M.setup = function(opts)
     opts = opts or {}
     config = vim.tbl_deep_extend("force", {}, config, opts)
 
-    vim.cmd[[
-    command! -nargs=* -complete=file WorkspacesAdd lua require("workspaces").add_swap(<f-args>)
-    command! -nargs=? -complete=customlist,v:lua.require'workspaces'.workspace_complete WorkspacesRemove lua require("workspaces").remove(<f-args>)
-    command! WorkspacesList lua require("workspaces").list()
-    command! -nargs=? -complete=customlist,v:lua.require'workspaces'.workspace_complete WorkspacesOpen lua require("workspaces").open(<f-args>)
-    ]]
+    vim.api.nvim_create_user_command("WorkspacesAdd", function(cmd_opts)
+        require("workspaces").add_swap(unpack(cmd_opts.fargs))
+    end, {
+        desc = "Add a workspace via name and path.",
+        nargs = "*",
+        complete = "file",
+    })
+
+    vim.api.nvim_create_user_command("WorkspacesRemove", function(cmd_opts)
+        require("workspaces").remove(unpack(cmd_opts.fargs))
+    end, {
+        desc = "Remove a workspace by name.",
+        nargs = "?",
+        complete = function(lead)
+            return require("workspaces").workspace_complete(lead)
+        end,
+    })
+
+    vim.api.nvim_create_user_command("WorkspacesRename", function(cmd_opts)
+        require("workspaces").rename(unpack(cmd_opts.fargs))
+    end, {
+        desc = "Rename a workspace by name to new name.",
+        nargs = "*",
+        complete = function(lead)
+            return require("workspaces").workspace_complete(lead)
+        end,
+    })
+
+    vim.api.nvim_create_user_command("WorkspacesList", function()
+        require("workspaces").list()
+    end, {
+        desc = "Print all workspaces.",
+    })
+
+    vim.api.nvim_create_user_command("WorkspacesOpen", function(cmd_opts)
+        require("workspaces").open(unpack(cmd_opts.fargs))
+    end, {
+        desc = "Open a workspace by name.",
+        nargs = "?",
+        complete = function(lead)
+            return require("workspaces").workspace_complete(lead)
+        end,
+    })
 end
 
 return M
