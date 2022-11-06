@@ -30,7 +30,7 @@ CONFIGURATION                                       *workspaces-configuration*
 Call the setup function with a table as the argument to override the default
 configuration. >
 
-    require("workspaces.nvim").setup({
+    require("workspaces").setup({
         -- path to a file to store workspaces data in
         -- on a unix system this would be ~/.local/share/nvim/workspaces
         path = vim.fn.stdpath("data") .. util.path.sep .. "workspaces",
