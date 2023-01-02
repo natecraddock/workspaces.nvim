@@ -7,7 +7,16 @@ local config = {
     path = vim.fn.stdpath("data") .. util.path.sep .. "workspaces",
 
     -- to change directory for nvim (:cd), or only for window (:lcd)
+    -- deprecated, use cd_type instead
     global_cd = true,
+
+    -- controls how the directory is changed. valid options are "global", "local", and "tab"
+    --   "global" changes directory for the neovim process. same as the :cd command
+    --   "local" changes directory for the current window. same as the :lcd command
+    --   "tab" changes directory for the current tab. same as the :tcd command
+    --
+    -- if set, overrides the value of global_cd, not set here to preserve backwards compatibility
+    -- cd_type = "global",
 
     -- sort the list of workspaces after loading from the workspaces path
     sort = true,
@@ -301,6 +310,22 @@ local select_fn = function(item, index)
     M.open(item.name)
 end
 
+local get_cd_command = function()
+    if config.cd_type then
+        if config.cd_type == "global" then
+            return "cd"
+        elseif config.cd_type == "local" then
+            return "lcd"
+        elseif config.cd_type == "tab" then
+            return "tcd"
+        end
+    elseif config.global_cd or config.global_cd == nil then
+        return "cd"
+    else
+        return "lcd"
+    end
+end
+
 ---opens the named workspace
 ---this changes the current directory to the path specified in the workspace entry
 ---@param name string|nil
@@ -331,11 +356,8 @@ M.open = function(name)
     store_workspaces(workspaces)
 
     -- change directory
-    if config.global_cd then
-        vim.api.nvim_set_current_dir(workspace.path)
-    else
-        vim.cmd(string.format("lcd %s", workspace.path))
-    end
+    local cd_command = get_cd_command()
+    vim.cmd(string.format("%s %s", cd_command, workspace.path))
 
     current_workspace = workspace.name
     run_hooks(config.hooks.open, workspace.name, workspace.path)
