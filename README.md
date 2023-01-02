@@ -41,9 +41,17 @@ The setup function accepts a table to modify the default configuration:
     -- on a unix system this would be ~/.local/share/nvim/workspaces
     path = vim.fn.stdpath("data") .. "/workspaces",
 
-    -- to change directory for all of nvim (:cd) or only for the current window (:lcd)
-    -- if you are unsure, you likely want this to be true.
-    global_cd = true,
+    -- to change directory for nvim (:cd), or only for window (:lcd)
+    -- deprecated, use cd_type instead
+    -- global_cd = true,
+
+    -- controls how the directory is changed. valid options are "global", "local", and "tab"
+    --   "global" changes directory for the neovim process. same as the :cd command
+    --   "local" changes directory for the current window. same as the :lcd command
+    --   "tab" changes directory for the current tab. same as the :tcd command
+    --
+    -- if set, overrides the value of global_cd
+    cd_type = "global",
 
     -- sort the list of workspaces by name after loading from the workspaces path.
     sort = true,
