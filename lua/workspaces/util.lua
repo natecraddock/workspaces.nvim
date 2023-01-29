@@ -66,4 +66,23 @@ M.file.write = function(path, data)
 	assert(uv.fs_write(fd, data, 0))
 end
 
+M.dir = {}
+M.dir.read = function(path)
+	local pdir, err = io.popen("ls -D " .. path)
+	if not pdir or err then
+		return nil
+	end
+
+	local directories = {}
+	for line in pdir:lines() do
+		if line then
+			table.insert(directories, line)
+		end
+	end
+
+	pdir.close(pdir)
+
+	return directories
+end
+
 return M
