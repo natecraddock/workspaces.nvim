@@ -68,7 +68,15 @@ end
 
 M.dir = {}
 M.dir.read = function(path)
-	local pdir, err = io.popen("ls -D " .. path)
+	-- TODO make it work for windows
+	local last_char = string.sub(path, string.len(path))
+	local end_path_command = "/*/"
+
+	if last_char == "/" then
+		end_path_command = "*/"
+	end
+
+	local pdir, err = io.popen("ls -d " .. path .. end_path_command)
 	if not pdir or err then
 		return nil
 	end
