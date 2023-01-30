@@ -407,15 +407,27 @@ M.workspace_complete = function(lead, _, _)
 	return workspace_name_complete(lead)
 end
 
--- adds directories
-M.add_directories = function(path)
+--- adds a directory subfolders as workspaces
+--- @param path string|nil
+M.add_directory = function(path)
 	if not path then
 		path = cwd()
 	end
 
 	local directories = util.dir.read(path)
 
-	print(directories)
+	if not directories then
+		return
+	end
+
+	for _, workspace_path in pairs(directories) do
+		local existing_workspace = find(nil, workspace_path)
+
+		if not existing_workspace then
+			local workspace_name = util.path.basename(workspace_path)
+			M.add_swap(workspace_name, workspace_path)
+		end
+	end
 end
 
 -- run to setup user commands and custom config
@@ -468,7 +480,7 @@ M.setup = function(opts)
 	})
 
 	vim.api.nvim_create_user_command("WorkspacesAddDir", function(cmd_opts)
-		require("workspaces").add_directories(unpack(cmd_opts.fargs))
+		require("workspaces").add_directory(unpack(cmd_opts.fargs))
 	end, {
 		desc = "Add all workspaces contained in a directory.",
 		nargs = "*",
