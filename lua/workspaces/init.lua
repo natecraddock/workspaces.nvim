@@ -459,6 +459,11 @@ M.add_directory = function(path)
 	store_workspaces(workspaces)
 end
 
+--- sync all directories workspaces
+M.sync_dirs = function()
+	-- TODO
+end
+
 -- run to setup user commands and custom config
 M.setup = function(opts)
 	opts = opts or {}
@@ -512,6 +517,16 @@ M.setup = function(opts)
 		require("workspaces").add_directory(unpack(cmd_opts.fargs))
 	end, {
 		desc = "Add all workspaces contained in a directory.",
+		nargs = "*",
+		complete = function(lead)
+			return require("workspaces").workspace_complete(lead)
+		end,
+	})
+
+	vim.api.nvim_create_user_command("WorkspacesSyncDirs", function(cmd_opts)
+		require("workspaces").sync_dirs(unpack(cmd_opts.fargs))
+	end, {
+		desc = "Synchronize all directories workspaces.",
 		nargs = "*",
 		complete = function(lead)
 			return require("workspaces").workspace_complete(lead)
