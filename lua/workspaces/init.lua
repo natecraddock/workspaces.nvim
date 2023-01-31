@@ -62,6 +62,7 @@ local load_workspaces = function()
 			name = data[1],
 			path = vim.fn.fnamemodify(data[2], ":p"),
 			last_opened = data[3],
+			type = data[4],
 		})
 	end
 
@@ -92,8 +93,9 @@ local store_workspaces = function(workspaces)
 	local data = ""
 	for _, workspace in ipairs(workspaces) do
 		-- not all workspaces have a date
-		local date_str = workspace.last_opened and "\0" .. workspace.last_opened or ""
-		data = data .. string.format("%s\0%s%s\n", workspace.name, workspace.path, date_str)
+		local date_str = workspace.last_opened or ""
+		local type = workspace.type or ""
+		data = data .. string.format("%s\0%s\0%s\0%s\n", workspace.name, workspace.path, date_str, type)
 	end
 	util.file.write(config.path, data)
 end
@@ -160,7 +162,9 @@ local M = {}
 ---as the path
 ---@param path string|nil
 ---@param name string|nil
-M.add = function(path, name)
+M.add = function(path, name, dir)
+	local type = dir or ""
+
 	if not path and not name then
 		-- none given, use current directory and name
 		path = cwd()
@@ -190,7 +194,7 @@ M.add = function(path, name)
 	-- check if it already exists
 	local workspaces = load_workspaces()
 	for _, workspace in ipairs(workspaces) do
-		if workspace.name == name or workspace.path == path then
+		if (workspace.name == name or workspace.path == path) and workspace.type == type then
 			notify.warn(string.format("Workspace '%s' is already registered", workspace.name))
 			return
 		end
@@ -224,14 +228,15 @@ M.add_swap = function(name, path)
 	end
 end
 
-local find = function(name, path)
+local find = function(name, path, is_dir)
+	local type = is_dir and "directory" or ""
 	if not name then
 		name = util.path.basename(path)
 	end
 
 	local workspaces = load_workspaces()
 	for i, workspace in ipairs(workspaces) do
-		if workspace.name == name or (path and direq(workspace.path, path)) then
+		if (workspace.name == name or (path and direq(workspace.path, path))) and workspace.type == type then
 			return workspace, i
 		end
 	end
@@ -299,7 +304,15 @@ end
 ---each workspace is formatted as a { name = "", path = "" } table
 ---@return table
 M.get = function()
-	return load_workspaces()
+	local workspaces_and_dirs = load_workspaces()
+	local workspaces = {}
+	for _, workspace in ipairs(workspaces_and_dirs) do
+		if workspace.type ~= "directory" then
+			table.insert(workspaces, workspace)
+		end
+	end
+
+	return workspaces
 end
 
 -- displays the list of workspaces
@@ -316,7 +329,9 @@ M.list = function()
 		if #workspaces == i then
 			ending = ""
 		end
-		print(string.format("%s %s%s", workspace.name, workspace.path, ending))
+		if workspace.type ~= "directory" then
+			print(string.format("%s %s%s", workspace.name, workspace.path, ending))
+		end
 	end
 end
 
@@ -415,19 +430,33 @@ M.add_directory = function(path)
 	end
 
 	local directories = util.dir.read(path)
-
 	if not directories then
 		return
 	end
 
-	for _, workspace_path in pairs(directories) do
+	for _, workspace_path in ipairs(directories) do
 		local existing_workspace = find(nil, workspace_path)
 
 		if not existing_workspace then
 			local workspace_name = util.path.basename(workspace_path)
-			M.add_swap(workspace_name, workspace_path)
+			M.add(workspace_name, workspace_path)
 		end
 	end
+
+	local existing_dir = find(nil, path, true)
+	if existing_dir then
+		return
+	end
+
+	local workspaces = load_workspaces()
+
+	table.insert(workspaces, {
+		name = util.path.basename(path),
+		path = path,
+		type = "directory",
+	})
+
+	store_workspaces(workspaces)
 end
 
 -- run to setup user commands and custom config
