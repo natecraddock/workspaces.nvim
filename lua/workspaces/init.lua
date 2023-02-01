@@ -301,37 +301,62 @@ M.rename = function(name, new_name)
     end
 end
 
+local get_workspaces_and_dirs = function()
+    local data = load_workspaces()
+
+    local directories = {}
+    local workspaces = {}
+    for _, item in ipairs(data) do
+        if item.type == "directory" then
+            table.insert(directories, item)
+        else
+            table.insert(workspaces, item)
+        end
+    end
+
+    return { workspaces = workspaces, directories = directories }
+end
+
 ---returns the list of all workspaces
 ---each workspace is formatted as a { name = "", path = "" } table
 ---@return table
 M.get = function()
-    local workspaces_and_dirs = load_workspaces()
-    local workspaces = {}
-    for _, workspace in ipairs(workspaces_and_dirs) do
-        if workspace.type ~= "directory" then
-            table.insert(workspaces, workspace)
-        end
+    local data = get_workspaces_and_dirs()
+
+    return data.workspaces
+end
+
+local print_workspaces_or_dirs = function(items, is_dir)
+    local type = is_dir and "directories" or "workspaces"
+    local command = is_dir and ":WorkspacesAddDir" or "WorkspacesAdd"
+
+    local ending = "\n"
+
+    if #items == 0 then
+        notify.warn(string.format("No %s are registered yet. Add one with %s", type, command))
+        return
     end
 
-    return workspaces
+    for i, item in ipairs(items) do
+        if #items == i then
+            ending = ""
+        end
+        print(string.format("%s %s%s", item.name, item.path, ending))
+    end
 end
 
 -- displays the list of workspaces
 M.list = function()
-    local workspaces = M.get()
-    local ending = "\n"
+    local data = get_workspaces_and_dirs()
 
-    if #workspaces == 0 then
-        notify.warn("No workspaces are registered yet. Add one with :WorkspacesAdd")
-        return
-    end
+    print_workspaces_or_dirs(data.workspaces)
+end
 
-    for i, workspace in ipairs(workspaces) do
-        if #workspaces == i then
-            ending = ""
-        end
-        print(string.format("%s %s%s", workspace.name, workspace.path, ending))
-    end
+-- displays the list of directories
+M.list_dirs = function()
+    local data = get_workspaces_and_dirs()
+
+    print_workspaces_or_dirs(data.directories)
 end
 
 local select_fn = function(item, index)
@@ -458,22 +483,6 @@ M.add_directory = function(path)
     store_workspaces(workspaces)
 end
 
-local get_workspaces_and_dirs = function()
-    local data = load_workspaces()
-
-    local directories = {}
-    local workspaces = {}
-    for _, item in ipairs(data) do
-        if item.type == "directory" then
-            table.insert(directories, item)
-        else
-            table.insert(workspaces, item)
-        end
-    end
-
-    return { workspaces = workspaces, directories = directories }
-end
-
 local get_dir_workspaces = function(dir_name)
     local data = get_workspaces_and_dirs()
 
@@ -548,6 +557,12 @@ M.setup = function(opts)
 
     vim.api.nvim_create_user_command("WorkspacesList", function()
         require("workspaces").list()
+    end, {
+        desc = "Print all workspaces.",
+    })
+
+    vim.api.nvim_create_user_command("WorkspacesListDirs", function()
+        require("workspaces").list_dirs()
     end, {
         desc = "Print all workspaces.",
     })
