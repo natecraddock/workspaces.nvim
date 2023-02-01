@@ -502,6 +502,8 @@ local get_dir_workspaces = function(dir_name)
     return directory_workspaces
 end
 
+--- sync all directories workspaces
+--- @param dir_name string
 M.remove_dir = function(dir_name)
     local workspaces = get_dir_workspaces(dir_name)
 
