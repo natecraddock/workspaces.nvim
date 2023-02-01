@@ -244,17 +244,19 @@ local find = function(name, path, is_dir)
     return nil
 end
 
----remove a workspace from the workspaces list by name
+---remove a workspace or directory from the data list by name
 ---name is optional, if omitted the current directory will be used
 ---@param name string|nil
-M.remove = function(name)
+M.remove = function(name, is_dir)
+    local type_name = is_dir and "Directory" or "Workspace"
+    print("type name: ", type_name)
     local path = cwd()
-    local workspace, i = find(name, path)
+    local workspace, i = find(name, path, is_dir)
     if not workspace then
         if not name then
             return
         end
-        notify.warn(string.format("Workspace '%s' does not exist", name))
+        notify.warn(string.format("%s '%s' does not exist", type_name, name))
         return
     end
 
@@ -265,7 +267,7 @@ M.remove = function(name)
     run_hooks(config.hooks.remove, workspace.name, workspace.path)
 
     if config.notify_info then
-        notify.info(string.format("workspace [%s -> %s] removed", workspace.name, workspace.path))
+        notify.info(string.format("%s [%s -> %s] removed", type_name, workspace.name, workspace.path))
     end
 end
 
@@ -317,7 +319,7 @@ end
 
 -- displays the list of workspaces
 M.list = function()
-    local workspaces = load_workspaces()
+    local workspaces = M.get()
     local ending = "\n"
 
     if #workspaces == 0 then
@@ -329,9 +331,7 @@ M.list = function()
         if #workspaces == i then
             ending = ""
         end
-        if workspace.type ~= "directory" then
-            print(string.format("%s %s%s", workspace.name, workspace.path, ending))
-        end
+        print(string.format("%s %s%s", workspace.name, workspace.path, ending))
     end
 end
 
@@ -459,10 +459,62 @@ M.add_directory = function(path)
     store_workspaces(workspaces)
 end
 
---- sync all directories workspaces
-M.sync_dirs = function()
-    -- TODO
+local get_workspaces_and_dirs = function()
+    local data = load_workspaces()
+
+    local directories = {}
+    local workspaces = {}
+    for _, item in ipairs(data) do
+        if item.type == "directory" then
+            table.insert(directories, item)
+        else
+            table.insert(workspaces, item)
+        end
+    end
+
+    return { workspaces = workspaces, directories = directories }
 end
+
+local get_directory_workspaces = function(dir_name)
+    local data = get_workspaces_and_dirs()
+
+    local directory_workspaces = {}
+    for _, dir in ipairs(data.directories) do
+        if dir_name == dir.name then
+            for _, workspace in ipairs(data.workspaces) do
+                local parent_path = util.path.parent(workspace.path)
+
+                if parent_path == dir.path then
+                    table.insert(directory_workspaces, workspace)
+                end
+            end
+        end
+    end
+
+    return directory_workspaces
+end
+
+M.remove_dir = function(dir_name)
+    local workspaces = get_directory_workspaces(dir_name)
+
+    for _, workspace in ipairs(workspaces) do
+        M.remove(workspace.name)
+    end
+
+    M.remove(dir_name, true)
+end
+
+--- sync all directories workspaces
+--[[ M.sync_dirs = function() ]]
+--[[     local data = get_workspaces_and_dirs() ]]
+--[[]]
+--[[     for _, dir in ipairs(data.directories) do ]]
+--[[         for _, workspace in ipairs(data.workspaces) do ]]
+--[[             local parent = util.path.parent(workspace.path) ]]
+--[[             print("parent: ", parent) ]]
+--[[         end ]]
+--[[     end ]]
+--[[ end ]]
 
 -- run to setup user commands and custom config
 M.setup = function(opts)
@@ -517,6 +569,16 @@ M.setup = function(opts)
         require("workspaces").add_directory(unpack(cmd_opts.fargs))
     end, {
         desc = "Add all workspaces contained in a directory.",
+        nargs = "*",
+        complete = function(lead)
+            return require("workspaces").workspace_complete(lead)
+        end,
+    })
+
+    vim.api.nvim_create_user_command("WorkspacesRemoveDir", function(cmd_opts)
+        require("workspaces").remove_dir(unpack(cmd_opts.fargs))
+    end, {
+        desc = "Remove a directory and its workspaces.",
         nargs = "*",
         complete = function(lead)
             return require("workspaces").workspace_complete(lead)
