@@ -37,13 +37,30 @@ M.path.sep = (function()
     end
 end)()
 
-M.path.basename = function(path_str)
+local get_path_parts = function(path_str)
     -- remove ending /
     if string.sub(path_str, #path_str, #path_str) == M.path.sep then
         path_str = string.sub(path_str, 1, #path_str - 1)
     end
-    local parts = vim.split(path_str, M.path.sep)
+
+    return vim.split(path_str, M.path.sep)
+end
+
+M.path.basename = function(path_str)
+    local parts = get_path_parts(path_str)
     return parts[#parts]
+end
+
+M.path.parent = function(path_str)
+    local parts = get_path_parts(path_str)
+    local path = ""
+    for i, part in ipairs(parts) do
+        if part ~= "" and i ~= #parts then
+            path = path .. M.path.sep .. part
+        end
+    end
+
+    return path .. M.path.sep
 end
 
 -- read a file into a string (synchronous)
