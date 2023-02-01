@@ -244,12 +244,11 @@ local find = function(name, path, is_dir)
     return nil
 end
 
----remove a workspace or directory from the data list by name
+---remove a workspace or directory from the data file by name
 ---name is optional, if omitted the current directory will be used
 ---@param name string|nil
 M.remove = function(name, is_dir)
     local type_name = is_dir and "Directory" or "Workspace"
-    print("type name: ", type_name)
     local path = cwd()
     local workspace, i = find(name, path, is_dir)
     if not workspace then
@@ -475,7 +474,7 @@ local get_workspaces_and_dirs = function()
     return { workspaces = workspaces, directories = directories }
 end
 
-local get_directory_workspaces = function(dir_name)
+local get_dir_workspaces = function(dir_name)
     local data = get_workspaces_and_dirs()
 
     local directory_workspaces = {}
@@ -495,7 +494,7 @@ local get_directory_workspaces = function(dir_name)
 end
 
 M.remove_dir = function(dir_name)
-    local workspaces = get_directory_workspaces(dir_name)
+    local workspaces = get_dir_workspaces(dir_name)
 
     for _, workspace in ipairs(workspaces) do
         M.remove(workspace.name)
@@ -505,16 +504,14 @@ M.remove_dir = function(dir_name)
 end
 
 --- sync all directories workspaces
---[[ M.sync_dirs = function() ]]
---[[     local data = get_workspaces_and_dirs() ]]
---[[]]
---[[     for _, dir in ipairs(data.directories) do ]]
---[[         for _, workspace in ipairs(data.workspaces) do ]]
---[[             local parent = util.path.parent(workspace.path) ]]
---[[             print("parent: ", parent) ]]
---[[         end ]]
---[[     end ]]
---[[ end ]]
+M.sync_dirs = function()
+    local data = get_workspaces_and_dirs()
+
+    for _, dir in ipairs(data.directories) do
+        M.remove_dir(dir.name)
+        M.add_directory(dir.path)
+    end
+end
 
 -- run to setup user commands and custom config
 M.setup = function(opts)
