@@ -591,7 +591,7 @@ M.setup = function(opts)
     vim.api.nvim_create_user_command("WorkspacesAddDir", function(cmd_opts)
         require("workspaces").add_dir(unpack(cmd_opts.fargs))
     end, {
-        desc = "Add all workspaces contained in a directory.",
+        desc = "Add a directory and register each one of its subfolders as workspaces.",
         nargs = "*",
         complete = "file",
     })
@@ -609,7 +609,7 @@ M.setup = function(opts)
     vim.api.nvim_create_user_command("WorkspacesRemoveDir", function(cmd_opts)
         require("workspaces").remove_dir(unpack(cmd_opts.fargs))
     end, {
-        desc = "Remove a directory and its workspaces.",
+        desc = "Remove a directory and its associated workspaces.",
         nargs = "*",
         complete = function(lead)
             return require("workspaces").directory_complete(lead)
@@ -651,7 +651,7 @@ M.setup = function(opts)
     vim.api.nvim_create_user_command("WorkspacesSyncDirs", function(cmd_opts)
         require("workspaces").sync_dirs()
     end, {
-        desc = "Synchronize all directory workspaces.",
+        desc = "Synchronize workspaces from registered directories.",
     })
 end
 
