@@ -103,7 +103,7 @@ M.dir.read = function(path)
             if empty then
                 empty = false
             end
-            table.insert(directories, normalized_path .. M.path.sep .. name)
+            table.insert(directories, normalized_path .. name)
         end
     end
 

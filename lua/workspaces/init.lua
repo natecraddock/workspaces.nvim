@@ -332,7 +332,7 @@ M.add = function(path, name)
     add_workspace_or_directory(path, name)
 end
 
---- adds a directory subfolders as workspaces
+---adds a directory subfolders as workspaces
 ---@param path string|nil
 ---@param no_logs boolean|nil
 M.add_dir = function(path, no_logs)
@@ -649,7 +649,7 @@ M.setup = function(opts)
     })
 
     vim.api.nvim_create_user_command("WorkspacesSyncDirs", function(cmd_opts)
-        require("workspaces").sync_dirs(unpack(cmd_opts.fargs))
+        require("workspaces").sync_dirs()
     end, {
         desc = "Synchronize all directory workspaces.",
     })
