@@ -85,29 +85,33 @@ end
 
 M.dir = {}
 M.dir.read = function(path)
-    -- TODO make it work for windows
-    local last_char = string.sub(path, string.len(path))
-    local end_path_command = "/*/"
+    local normalized_path = vim.fs.normalize(path)
+    local handle = uv.fs_scandir(normalized_path)
 
-    if last_char == "/" then
-        end_path_command = "*/"
-    end
-
-    local pdir, err = io.popen("ls -d " .. path .. end_path_command)
-    if not pdir or err then
-        return nil
+    if not handle then
+        return nil, "Directory not found"
     end
 
     local directories = {}
-    for line in pdir:lines() do
-        if line then
-            table.insert(directories, line)
+    local empty = true
+    while true do
+        local name, type = uv.fs_scandir_next(handle)
+        if name == nil then
+            break
+        end
+        if type == "directory" then
+            if empty then
+                empty = false
+            end
+            table.insert(directories, normalized_path .. M.path.sep .. name)
         end
     end
 
-    pdir.close(pdir)
-
-    return directories
+    if empty then
+        return nil, "There are no folders in this directory"
+    else
+        return directories
+    end
 end
 
 return M
