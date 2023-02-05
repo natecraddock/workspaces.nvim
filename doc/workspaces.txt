@@ -84,21 +84,51 @@ directory will be registered as a workspace, with the given name.
 if both name and path are provided, the workspace with name and path will be
 registered.
 
-:WorkspacesRemove [name]                             *WorkspacesRemove*
+:WorkspacesAddDir [path]                                *WorkspacesAddDir*
+
+If the path is omitted, the current working directory will be
+registered as a directory, with the last path segment as the name.
+
+Each subfolder of this directory will be automatically registered as a
+workspace.
+
+:WorkspacesRemove [name]                                *WorkspacesRemove*
 
 If name is omitted, the workspace registered in the current working
 directory will be removed, if it exists.
 
 If name is provided, the specified workspace will be removed.
 
-:WorkspacesList                                        *WorkspacesList*
+:WorkspacesRemoveDir [name]                             *WorkspacesRemoveDir*
+
+If name is omitted, the directory registered in the current working
+directory will be removed, if it exists.
+
+If name is provided, the specified directory will be removed.
+
+When a directory is removed, all of its subfolders registered as workspaces
+are also removed.
+
+:WorkspacesList                                         *WorkspacesList*
 
 Prints all workspaces.
 
-:WorkspacesOpen [name]                                 *WorkspacesOpen*
+:WorkspacesListDirs                                     *WorkspacesListDirs*
+
+Prints all directories.
+
+:WorkspacesOpen [name]                                  *WorkspacesOpen*
 
 Opens the named workspace. If no name is given, vim.ui.select() will be used
 as a selection interface for opening a workspace.
+
+:WorkspacesSyncDirs [name]                              *WorkspacesSyncDirs*
+
+For every registered directory, synchronizes workspaces based on the file
+system.
+
+If a directory subfolder has been removed or added, it will also be removed or
+added from the registered workspaces.
 
 All commands that take a workspace name (|:WorkspacesOpen| and
 |:WorkspacesRemove|) offer workspace name completion. |:WorkspacesAdd| offers
