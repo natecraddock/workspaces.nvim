@@ -537,27 +537,30 @@ M.name = function()
     return current_workspace
 end
 
-local workspace_name_complete = function(lead, is_dir)
-    local workspaces = vim.tbl_filter(function(workspace)
+local workspace_or_dir_name_complete = function(lead, is_dir)
+    local data = get_workspaces_and_dirs()
+    local list_by_type = is_dir and data.directories or data.workspaces
+
+    local items = vim.tbl_filter(function(item)
         if lead == "" then
             return true
         end
-        return vim.startswith(workspace.name, lead)
-    end, load_workspaces())
+        return vim.startswith(item.name, lead)
+    end, list_by_type)
 
-    return vim.tbl_map(function(workspace)
-        return workspace.name
-    end, workspaces)
+    return vim.tbl_map(function(item)
+        return item.name
+    end, items)
 end
 
 -- completion for workspace names only
 M.workspace_complete = function(lead, _, _)
-    return workspace_name_complete(lead)
+    return workspace_or_dir_name_complete(lead)
 end
 
 -- completion for directory names only
 M.directory_complete = function(lead, _, _)
-    return workspace_name_complete(lead, true)
+    return workspace_or_dir_name_complete(lead, true)
 end
 
 --- sync all directories workspaces
@@ -609,7 +612,7 @@ M.setup = function(opts)
         desc = "Remove a directory and its workspaces.",
         nargs = "*",
         complete = function(lead)
-            return require("workspaces").workspace_complete(lead)
+            return require("workspaces").directory_complete(lead)
         end,
     })
 
