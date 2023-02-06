@@ -221,8 +221,8 @@ end
 ---@param path string|nil
 ---@param name string|nil
 ---@param is_dir boolean|nil
----@param no_logs boolean|nil
-local add_workspace_or_directory = function(path, name, is_dir, no_logs)
+---@param from_dir_update boolean|nil
+local add_workspace_or_directory = function(path, name, is_dir, from_dir_update)
     local type = is_dir and "directory" or ""
     local type_name = is_dir and "Directory" or "Workspace"
 
@@ -267,9 +267,11 @@ local add_workspace_or_directory = function(path, name, is_dir, no_logs)
     })
 
     store_workspaces(workspaces)
-    run_hooks(config.hooks.add, name, path)
+    if not is_dir and not from_dir_update then
+        run_hooks(config.hooks.add, name, path)
+    end
 
-    if config.notify_info and not no_logs then
+    if config.notify_info and not from_dir_update then
         notify.info(string.format("workspace [%s -> %s] added", name, path))
     end
 end
@@ -278,8 +280,8 @@ end
 ---name is optional, if omitted the current directory will be used
 ---@param name string|nil
 ---@param is_dir boolean|nil
----@param no_logs boolean|nil
-local remove_workspace_or_directory = function(name, is_dir, no_logs)
+---@param from_dir_update boolean|nil
+local remove_workspace_or_directory = function(name, is_dir, from_dir_update)
     local type_name = is_dir and "Directory" or "Workspace"
     local path = cwd()
     local workspace, i = find(name, path, is_dir)
@@ -295,9 +297,11 @@ local remove_workspace_or_directory = function(name, is_dir, no_logs)
     table.remove(workspaces, i)
     store_workspaces(workspaces)
 
-    run_hooks(config.hooks.remove, workspace.name, workspace.path)
+    if not is_dir and not from_dir_update then
+        run_hooks(config.hooks.remove, workspace.name, workspace.path)
+    end
 
-    if config.notify_info and not no_logs then
+    if config.notify_info and not from_dir_update then
         notify.info(string.format("%s [%s -> %s] removed", type_name, workspace.name, workspace.path))
     end
 end
