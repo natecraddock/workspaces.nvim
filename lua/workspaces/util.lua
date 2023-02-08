@@ -63,6 +63,16 @@ M.path.parent = function(path_str)
     return path .. M.path.sep
 end
 
+M.path.normalize = function(path_str)
+    local normalized = vim.fs.normalize(path_str)
+
+    if string.sub(normalized, #normalized) ~= M.path.sep then
+        normalized = normalized .. M.path.sep
+    end
+
+    return normalized
+end
+
 -- read a file into a string (synchronous)
 M.file = {}
 M.file.read = function(path)
@@ -85,33 +95,26 @@ end
 
 M.dir = {}
 M.dir.read = function(path)
-    local normalized_path = vim.fs.normalize(path)
-    local handle = uv.fs_scandir(normalized_path)
+    local normalized = M.path.normalize(path)
+
+    local handle = uv.fs_scandir(normalized)
 
     if not handle then
-        return nil, "Directory not found"
+        return nil
     end
 
     local directories = {}
-    local empty = true
     while true do
         local name, type = uv.fs_scandir_next(handle)
         if name == nil then
             break
         end
         if type == "directory" then
-            if empty then
-                empty = false
-            end
-            table.insert(directories, normalized_path .. name)
+            table.insert(directories, normalized .. name)
         end
     end
 
-    if empty then
-        return nil, "There are no folders in this directory"
-    else
-        return directories
-    end
+    return directories
 end
 
 return M
