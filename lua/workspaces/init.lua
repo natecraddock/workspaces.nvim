@@ -565,13 +565,13 @@ M.sync_dirs = function()
         local stored_workspaces = get_dir_workspaces(dir.name)
         local new_workspaces = util.dir.read(dir.path)
 
-        -- if a directory workspace is not registered we create it
+        -- if a directory workspace is not registered we add it
         for _, path in ipairs(new_workspaces or {}) do
             local new_path = util.path.normalize(path)
             add_workspace_or_directory(new_path, nil, false, true)
         end
 
-        -- if a registered workspace doesn't exists in the directory we delete it
+        -- if a registered workspace doesn't exist in the file system we remove it
         for _, old in ipairs(stored_workspaces) do
             local exists = false
             for _, path in ipairs(new_workspaces or {}) do
