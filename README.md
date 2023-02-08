@@ -141,11 +141,11 @@ local workspaces = require("workspaces")
 
 workspaces.add(path: string, name: string)
 
-workspaces.add_dir(path: string, no_logs: boolean)
+workspaces.add_dir(path: string)
 
 workspaces.remove(name: string)
 
-workspaces.removeDir(name: string, no_logs: boolean)
+workspaces.remove_dir(name: string)
 
 workspaces.rename(name: string, new_name: string)
 
