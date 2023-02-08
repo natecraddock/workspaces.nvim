@@ -256,7 +256,9 @@ local add_workspace_or_directory = function(path, name, is_dir, from_dir_update)
     local workspaces = load_workspaces()
     for _, workspace in ipairs(workspaces) do
         if (workspace.name == name or workspace.path == path) and workspace.type == type then
-            notify.warn(string.format("%s '%s' is already registered", type_name, workspace.name))
+            if not from_dir_update then
+                notify.warn(string.format("%s '%s' is already registered", type_name, workspace.name))
+            end
             return
         end
     end
@@ -264,6 +266,7 @@ local add_workspace_or_directory = function(path, name, is_dir, from_dir_update)
     table.insert(workspaces, {
         name = name,
         path = path,
+        type = type,
     })
 
     store_workspaces(workspaces)
@@ -272,7 +275,7 @@ local add_workspace_or_directory = function(path, name, is_dir, from_dir_update)
     end
 
     if config.notify_info and not from_dir_update then
-        notify.info(string.format("workspace [%s -> %s] added", name, path))
+        notify.info(string.format("%s [%s -> %s] added", type_name, name, path))
     end
 end
 
@@ -301,7 +304,7 @@ local remove_workspace_or_directory = function(name, is_dir, from_dir_update)
         run_hooks(config.hooks.remove, workspace.name, workspace.path)
     end
 
-    if config.notify_info and not from_dir_update then
+    if config.notify_info and (not from_dir_update or is_dir) then
         notify.info(string.format("%s [%s -> %s] removed", type_name, workspace.name, workspace.path))
     end
 end
@@ -338,45 +341,27 @@ end
 
 ---adds a directory subfolders as workspaces
 ---@param path string|nil
----@param no_logs boolean|nil
-M.add_dir = function(path, no_logs)
+M.add_dir = function(path)
     if not path then
         path = cwd()
     end
 
-    local directories, err = util.dir.read(path)
+    local normalized_path = util.path.normalize(path)
+    local directories = util.dir.read(normalized_path)
+
     if not directories then
-        return notify.err(err)
+        return notify.warn(string.format("No directory found -> %s", normalized_path))
     end
 
     for _, workspace_path in ipairs(directories) do
-        local existing_workspace = find(nil, workspace_path)
+        local workspace_name = util.path.basename(workspace_path)
 
-        if not existing_workspace then
-            local workspace_name = util.path.basename(workspace_path)
-            add_workspace_or_directory(workspace_name, workspace_path, false, true)
-        end
+        add_workspace_or_directory(workspace_name, workspace_path, false, true)
     end
 
-    local existing_dir = find(nil, path, true)
-    if existing_dir then
-        return
-    end
+    local dir_name = util.path.basename(normalized_path)
 
-    local workspaces = load_workspaces()
-
-    local dir_name = util.path.basename(path)
-    table.insert(workspaces, {
-        name = dir_name,
-        path = path,
-        type = "directory",
-    })
-
-    store_workspaces(workspaces)
-
-    if not no_logs then
-        notify.info(string.format("Directory [%s -> %s] and associated workspaces added", dir_name, path))
-    end
+    add_workspace_or_directory(dir_name, normalized_path, true, false)
 end
 
 -- This function is a legacy of the older api, but it's not worth
@@ -403,8 +388,17 @@ end
 
 ---removes directory and associated workspaces
 ---@param dir_name string
----@param no_logs boolean|nil
-M.remove_dir = function(dir_name, no_logs)
+M.remove_dir = function(dir_name)
+    if not dir_name then
+        local path = cwd()
+        dir_name = util.path.basename(path)
+    end
+
+    local exists = find(dir_name, nil, true)
+    if not exists then
+        notify.warn(string.format("%s does not exists", dir_name))
+        return
+    end
     local workspaces = get_dir_workspaces(dir_name)
 
     for _, workspace in ipairs(workspaces) do
@@ -412,10 +406,6 @@ M.remove_dir = function(dir_name, no_logs)
     end
 
     remove_workspace_or_directory(dir_name, true, true)
-
-    if not no_logs then
-        notify.info(string.format("Directory [%s] and associated workspaces removed", dir_name))
-    end
 end
 
 local current_workspace = nil
@@ -572,8 +562,30 @@ M.sync_dirs = function()
     local data = get_workspaces_and_dirs()
 
     for _, dir in ipairs(data.directories) do
-        M.remove_dir(dir.name, true)
-        M.add_dir(dir.path, true)
+        local stored_workspaces = get_dir_workspaces(dir.name)
+        local new_workspaces = util.dir.read(dir.path)
+
+        -- if a directory workspace is not registered we create it
+        for _, path in ipairs(new_workspaces or {}) do
+            local new_path = util.path.normalize(path)
+            add_workspace_or_directory(new_path, nil, false, true)
+        end
+
+        -- if a registered workspace doesn't exists in the directory we delete it
+        for _, old in ipairs(stored_workspaces) do
+            local exists = false
+            for _, path in ipairs(new_workspaces or {}) do
+                local new_path = util.path.normalize(path)
+
+                if old.path == new_path then
+                    exists = true
+                end
+            end
+
+            if not exists then
+                remove_workspace_or_directory(old.name, false, true)
+            end
+        end
     end
 
     notify.info(string.format("Directory workspaces have been synced"))
