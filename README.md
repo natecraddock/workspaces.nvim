@@ -100,9 +100,19 @@ The setup function registers the following user commands:
 
   The workspace with the specified name and path will be registered.
 
+ * `:WorkspacesAddDir [path]`
+
+  The directory with the specified or current path will be registered
+  and each one of its sub folders stored as workspaces.
+
 * `:WorkspacesRemove [name]`
 
   The workspace with the specified name will be removed.
+
+* `:WorkspacesRemoveDir [name]`
+
+  The directory with the specified name will be removed
+  as well as all of its associated workspaces.
 
 * `:WorkspacesRename [name] [new_name]`
 
@@ -112,10 +122,18 @@ The setup function registers the following user commands:
 
   Prints all workspaces.
 
+* `:WorkspacesListDirs`
+
+  Prints all directories.
+
 * `:WorkspacesOpen [name]`
 
   Opens the named workspace. *opening* a workspace means to change the current
   directory to that workspace's path.
+
+* `:WorkspacesSyncDirs`
+
+  Synchronize workspaces from registered directories.
 
 See `:h workspaces-usage` for more information on the commands.
 
@@ -128,17 +146,26 @@ local workspaces = require("workspaces")
 
 workspaces.add(path: string, name: string)
 
+workspaces.add_dir(path: string)
+
 workspaces.remove(name: string)
+
+workspaces.remove_dir(name: string)
 
 workspaces.rename(name: string, new_name: string)
 
 workspaces.list()
+
+workspaces.list_dirs()
 
 workspaces.open(name: string)
 
 workspaces.get(): table
 
 workspaces.name(): string|nil
+
+workspaces.sync_dirs()
+
 ```
 
 See `:h workspaces-api` for more information on the API functions.

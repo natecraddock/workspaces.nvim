@@ -62,6 +62,7 @@ local load_workspaces = function()
             name = data[1],
             path = vim.fn.fnamemodify(data[2], ":p"),
             last_opened = data[3],
+            type = data[4],
         })
     end
 
@@ -69,10 +70,12 @@ local load_workspaces = function()
         table.sort(workspaces, function(a, b)
             if config.mru_sort then
                 if a.last_opened then
-                    if b.last_opened then return a.last_opened > b.last_opened end
+                    if b.last_opened then
+                        return a.last_opened > b.last_opened
+                    end
                     return true
-	        elseif b.last_opened then
-		    return false
+                elseif b.last_opened then
+                    return false
                 else
                     return a.name < b.name
                 end
@@ -90,8 +93,9 @@ local store_workspaces = function(workspaces)
     local data = ""
     for _, workspace in ipairs(workspaces) do
         -- not all workspaces have a date
-        local date_str = workspace.last_opened and "\0" .. workspace.last_opened or ""
-        data = data .. string.format("%s\0%s%s\n", workspace.name, workspace.path, date_str)
+        local date_str = workspace.last_opened or ""
+        local type = workspace.type or ""
+        data = data .. string.format("%s\0%s\0%s\0%s\n", workspace.name, workspace.path, date_str, type)
     end
     util.file.write(config.path, data)
 end
@@ -112,7 +116,9 @@ end
 ---@param state table|nil
 local run_hook = function(hook, name, path, state)
     if type(hook) == "function" then
-        if hook(name, path, state) == false then return false end
+        if hook(name, path, state) == false then
+            return false
+        end
     elseif type(hook) == "string" then
         vim.cmd(hook)
     else
@@ -128,29 +134,98 @@ end
 ---@param path string
 ---@param state table|nil
 local run_hooks = function(hooks, name, path, state)
-    if not hooks then return end
+    if not hooks then
+        return
+    end
 
     if type(hooks) == "table" then
         for _, hook in ipairs(hooks) do
-            if run_hook(hook, name, path, state) == false then return false end
+            if run_hook(hook, name, path, state) == false then
+                return false
+            end
         end
     else
-        if run_hook(hooks, name, path, state) == false then return false end
+        if run_hook(hooks, name, path, state) == false then
+            return false
+        end
     end
 
     return true
 end
 
-local M = {}
+---returns the list of workspaces and directories
+---@return table
+local get_workspaces_and_dirs = function()
+    local data = load_workspaces()
 
----add a workspace to the workspaces list
+    local directories = {}
+    local workspaces = {}
+    for _, item in ipairs(data) do
+        if item.type == "directory" then
+            table.insert(directories, item)
+        else
+            table.insert(workspaces, item)
+        end
+    end
+
+    return { workspaces = workspaces, directories = directories }
+end
+
+---prints the list of workspaces or directories
+---@param items table
+---@param is_dir boolean|nil
+local print_workspaces_or_dirs = function(items, is_dir)
+    local type = is_dir and "directories" or "workspaces"
+    local command = is_dir and ":WorkspacesAddDir" or ":WorkspacesAdd"
+
+    local ending = "\n"
+
+    if #items == 0 then
+        notify.warn(string.format("No %s are registered yet. Add one with %s", type, command))
+        return
+    end
+
+    for i, item in ipairs(items) do
+        if #items == i then
+            ending = ""
+        end
+        print(string.format("%s %s%s", item.name, item.path, ending))
+    end
+end
+
+---finds a specific workspace or directory based on its name or path
+---@param name string|nil
+---@param path string|nil
+---@param is_dir boolean|nil
+local find = function(name, path, is_dir)
+    local type = is_dir and "directory" or ""
+    if not name then
+        name = util.path.basename(path)
+    end
+
+    local workspaces = load_workspaces()
+    for i, workspace in ipairs(workspaces) do
+        if (workspace.name == name or (path and direq(workspace.path, path))) and workspace.type == type then
+            return workspace, i
+        end
+    end
+
+    return nil
+end
+
+---adds a workspace or directory to the data file
 ---path is optional, if omitted the current directory will be used
 ---name is optional, if omitted the path will be used
 ---if path is nil and name looks like a path, then name will be used
 ---as the path
 ---@param path string|nil
 ---@param name string|nil
-M.add = function(path, name)
+---@param is_dir boolean|nil
+---@param from_dir_update boolean|nil
+local add_workspace_or_directory = function(path, name, is_dir, from_dir_update)
+    local type = is_dir and "directory" or ""
+    local type_name = is_dir and "Directory" or "Workspace"
+
     if not path and not name then
         -- none given, use current directory and name
         path = cwd()
@@ -180,8 +255,10 @@ M.add = function(path, name)
     -- check if it already exists
     local workspaces = load_workspaces()
     for _, workspace in ipairs(workspaces) do
-        if workspace.name == name or workspace.path == path then
-            notify.warn(string.format("Workspace '%s' is already registered", workspace.name))
+        if (workspace.name == name or workspace.path == path) and workspace.type == type then
+            if not from_dir_update then
+                notify.warn(string.format("%s '%s' is already registered", type_name, workspace.name))
+            end
             return
         end
     end
@@ -189,14 +266,102 @@ M.add = function(path, name)
     table.insert(workspaces, {
         name = name,
         path = path,
+        type = type,
     })
 
     store_workspaces(workspaces)
-    run_hooks(config.hooks.add, name, path)
-
-    if config.notify_info then
-        notify.info(string.format("workspace [%s -> %s] added", name, path))
+    if not is_dir and not from_dir_update then
+        run_hooks(config.hooks.add, name, path)
     end
+
+    if config.notify_info and not from_dir_update then
+        notify.info(string.format("%s [%s -> %s] added", type_name, name, path))
+    end
+end
+
+---remove a workspace or directory from the data file by name
+---name is optional, if omitted the current directory will be used
+---@param name string|nil
+---@param is_dir boolean|nil
+---@param from_dir_update boolean|nil
+local remove_workspace_or_directory = function(name, is_dir, from_dir_update)
+    local type_name = is_dir and "Directory" or "Workspace"
+    local path = cwd()
+    local workspace, i = find(name, path, is_dir)
+    if not workspace then
+        if not name then
+            return
+        end
+        notify.warn(string.format("%s '%s' does not exist", type_name, name))
+        return
+    end
+
+    local workspaces = load_workspaces()
+    table.remove(workspaces, i)
+    store_workspaces(workspaces)
+
+    if not is_dir and not from_dir_update then
+        run_hooks(config.hooks.remove, workspace.name, workspace.path)
+    end
+
+    if config.notify_info and (not from_dir_update or is_dir) then
+        notify.info(string.format("%s [%s -> %s] removed", type_name, workspace.name, workspace.path))
+    end
+end
+
+---gets workspaces from a specific directory by name
+---@param dir_name string
+local get_dir_workspaces = function(dir_name)
+    local data = get_workspaces_and_dirs()
+
+    local directory_workspaces = {}
+    for _, dir in ipairs(data.directories) do
+        if dir_name == dir.name then
+            for _, workspace in ipairs(data.workspaces) do
+                local parent_path = util.path.parent(workspace.path)
+
+                if parent_path == dir.path then
+                    table.insert(directory_workspaces, workspace)
+                end
+            end
+        end
+    end
+
+    return directory_workspaces
+end
+
+local M = {}
+
+---adds a workspace to the data file
+---@param path string|nil
+---@param name string|nil
+M.add = function(path, name)
+    add_workspace_or_directory(path, name)
+end
+
+---adds a directory subfolders as workspaces
+---@param path string|nil
+M.add_dir = function(path)
+    if not path then
+        path = cwd()
+    end
+
+    local normalized_path = util.path.normalize(path)
+    local directories = util.dir.read(normalized_path)
+
+    if not directories then
+        return notify.warn(string.format("No directory found -> %s", normalized_path))
+    end
+
+    for _, workspace_path in ipairs(directories) do
+        local workspace_name = util.path.basename(workspace_path)
+
+        add_workspace_or_directory(workspace_name, workspace_path, false, true)
+    end
+
+    local dir_name = util.path.basename(normalized_path)
+
+    add_workspace_or_directory(dir_name, normalized_path, true, false)
 end
 
 -- This function is a legacy of the older api, but it's not worth
@@ -214,42 +379,33 @@ M.add_swap = function(name, path)
     end
 end
 
-local find = function(name, path)
-    if not name then
-        name = util.path.basename(path)
-    end
-
-    local workspaces = load_workspaces()
-    for i, workspace in ipairs(workspaces) do
-        if workspace.name == name or (path and direq(workspace.path, path)) then
-            return workspace, i
-        end
-    end
-
-    return nil
-end
-
----remove a workspace from the workspaces list by name
+---remove a workspace or directory from the data file by name
 ---name is optional, if omitted the current directory will be used
 ---@param name string|nil
 M.remove = function(name)
-    local path = cwd()
-    local workspace, i = find(name, path)
-    if not workspace then
-        if not name then return end
-        notify.warn(string.format("Workspace '%s' does not exist", name))
+    remove_workspace_or_directory(name)
+end
+
+---removes directory and associated workspaces
+---@param dir_name string
+M.remove_dir = function(dir_name)
+    if not dir_name then
+        local path = cwd()
+        dir_name = util.path.basename(path)
+    end
+
+    local exists = find(dir_name, nil, true)
+    if not exists then
+        notify.warn(string.format("%s does not exists", dir_name))
         return
     end
+    local workspaces = get_dir_workspaces(dir_name)
 
-    local workspaces = load_workspaces()
-    table.remove(workspaces, i)
-    store_workspaces(workspaces)
-
-    run_hooks(config.hooks.remove, workspace.name, workspace.path)
-
-    if config.notify_info then
-        notify.info(string.format("workspace [%s -> %s] removed", workspace.name, workspace.path))
+    for _, workspace in ipairs(workspaces) do
+        remove_workspace_or_directory(workspace.name, false, true)
     end
+
+    remove_workspace_or_directory(dir_name, true, true)
 end
 
 local current_workspace = nil
@@ -260,7 +416,9 @@ local current_workspace = nil
 M.rename = function(name, new_name)
     local workspace, i = find(name)
     if not workspace or not i then
-        if not name then return end
+        if not name then
+            return
+        end
         notify.warn(string.format("Workspace '%s' does not exist", name))
         return
     end
@@ -285,28 +443,30 @@ end
 ---each workspace is formatted as a { name = "", path = "" } table
 ---@return table
 M.get = function()
-    return load_workspaces()
+    local data = get_workspaces_and_dirs()
+
+    return data.workspaces
 end
 
 -- displays the list of workspaces
 M.list = function()
-    local workspaces = load_workspaces()
-    local ending = "\n"
+    local data = get_workspaces_and_dirs()
 
-    if #workspaces == 0 then
-        notify.warn("No workspaces are registered yet. Add one with :WorkspacesAdd")
-        return
-    end
+    print_workspaces_or_dirs(data.workspaces)
+end
 
-    for i, workspace in ipairs(workspaces) do
-        if #workspaces == i then ending = "" end
-        print(string.format("%s %s%s", workspace.name, workspace.path, ending))
-    end
+-- displays the list of directories
+M.list_dirs = function()
+    local data = get_workspaces_and_dirs()
+
+    print_workspaces_or_dirs(data.directories)
 end
 
 local select_fn = function(item, index)
     -- prevent an infinite open loop
-    if not item then return end
+    if not item then
+        return
+    end
     M.open(item.name)
 end
 
@@ -334,7 +494,9 @@ M.open = function(name)
         local workspaces = load_workspaces()
         vim.ui.select(workspaces, {
             prompt = "Select workspace to open:",
-            format_item = function(item) return item.name end,
+            format_item = function(item)
+                return item.name
+            end,
         }, select_fn)
         return
     end
@@ -369,20 +531,64 @@ M.name = function()
     return current_workspace
 end
 
-local workspace_name_complete = function(lead)
-    local workspaces = vim.tbl_filter(function(workspace)
-        if lead == "" then return true end
-        return vim.startswith(workspace.name, lead)
-    end, load_workspaces())
+local workspace_or_dir_name_complete = function(lead, is_dir)
+    local data = get_workspaces_and_dirs()
+    local list_by_type = is_dir and data.directories or data.workspaces
 
-    return vim.tbl_map(function(workspace)
-        return workspace.name
-    end, workspaces)
+    local items = vim.tbl_filter(function(item)
+        if lead == "" then
+            return true
+        end
+        return vim.startswith(item.name, lead)
+    end, list_by_type)
+
+    return vim.tbl_map(function(item)
+        return item.name
+    end, items)
 end
 
 -- completion for workspace names only
 M.workspace_complete = function(lead, _, _)
-    return workspace_name_complete(lead)
+    return workspace_or_dir_name_complete(lead)
+end
+
+-- completion for directory names only
+M.directory_complete = function(lead, _, _)
+    return workspace_or_dir_name_complete(lead, true)
+end
+
+--- sync all directories workspaces
+M.sync_dirs = function()
+    local data = get_workspaces_and_dirs()
+
+    for _, dir in ipairs(data.directories) do
+        local stored_workspaces = get_dir_workspaces(dir.name)
+        local new_workspaces = util.dir.read(dir.path)
+
+        -- if a directory workspace is not registered we add it
+        for _, path in ipairs(new_workspaces or {}) do
+            local new_path = util.path.normalize(path)
+            add_workspace_or_directory(new_path, nil, false, true)
+        end
+
+        -- if a registered workspace doesn't exist in the file system we remove it
+        for _, old in ipairs(stored_workspaces) do
+            local exists = false
+            for _, path in ipairs(new_workspaces or {}) do
+                local new_path = util.path.normalize(path)
+
+                if old.path == new_path then
+                    exists = true
+                end
+            end
+
+            if not exists then
+                remove_workspace_or_directory(old.name, false, true)
+            end
+        end
+    end
+
+    notify.info(string.format("Directory workspaces have been synced"))
 end
 
 -- run to setup user commands and custom config
@@ -398,6 +604,14 @@ M.setup = function(opts)
         complete = "file",
     })
 
+    vim.api.nvim_create_user_command("WorkspacesAddDir", function(cmd_opts)
+        require("workspaces").add_dir(unpack(cmd_opts.fargs))
+    end, {
+        desc = "Add a directory and register each one of its subfolders as workspaces.",
+        nargs = "*",
+        complete = "file",
+    })
+
     vim.api.nvim_create_user_command("WorkspacesRemove", function(cmd_opts)
         require("workspaces").remove(unpack(cmd_opts.fargs))
     end, {
@@ -405,6 +619,16 @@ M.setup = function(opts)
         nargs = "?",
         complete = function(lead)
             return require("workspaces").workspace_complete(lead)
+        end,
+    })
+
+    vim.api.nvim_create_user_command("WorkspacesRemoveDir", function(cmd_opts)
+        require("workspaces").remove_dir(unpack(cmd_opts.fargs))
+    end, {
+        desc = "Remove a directory and its associated workspaces.",
+        nargs = "*",
+        complete = function(lead)
+            return require("workspaces").directory_complete(lead)
         end,
     })
 
@@ -424,6 +648,12 @@ M.setup = function(opts)
         desc = "Print all workspaces.",
     })
 
+    vim.api.nvim_create_user_command("WorkspacesListDirs", function()
+        require("workspaces").list_dirs()
+    end, {
+        desc = "Print all directories.",
+    })
+
     vim.api.nvim_create_user_command("WorkspacesOpen", function(cmd_opts)
         require("workspaces").open(unpack(cmd_opts.fargs))
     end, {
@@ -432,6 +662,12 @@ M.setup = function(opts)
         complete = function(lead)
             return require("workspaces").workspace_complete(lead)
         end,
+    })
+
+    vim.api.nvim_create_user_command("WorkspacesSyncDirs", function(cmd_opts)
+        require("workspaces").sync_dirs()
+    end, {
+        desc = "Synchronize workspaces from registered directories.",
     })
 end
 
