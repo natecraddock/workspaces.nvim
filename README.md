@@ -2,11 +2,6 @@
 
 a simple plugin to manage workspace directories in neovim
 
-### Notice
-**I don't use Neovim regularly anymore.** I keep this plugin up because many people use it, and it is mostly easy to maintain. But I would appreciate someone to help me maintain it! Just let me know on the [issue thread](https://github.com/natecraddock/workspaces.nvim/issues/19).
-
----
-
 workspaces.nvim provides a few simple commands for managing workspace
 directories in neovim. A workspace is a name and a path, and opening a workspace
 will set the current directory to the correct path.
