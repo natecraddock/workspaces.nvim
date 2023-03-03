@@ -62,7 +62,7 @@ local load_workspaces = function()
             name = data[1],
             path = vim.fn.fnamemodify(data[2], ":p"),
             last_opened = data[3],
-            type = data[4],
+            type = data[4] or "",
         })
     end
 
