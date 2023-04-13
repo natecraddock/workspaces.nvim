@@ -595,22 +595,19 @@ M.sync_dirs = function()
 end
 
 -- function that adds a neovim autocmd that activates 
-local enable_autoload = function(opts)
-    opts = opts or {}
-    if opts.auto_open then
-      -- create autocmd for every file at the start of neovim that checks the current working directory
-      -- and if the cwd  matches a workspace directory then activate the corresponding workspace
-        vim.api.nvim_create_autocmd({ "VimEnter" }, {
-            pattern = "*",
-            callback = function()
-                for _, workspace in pairs(get_workspaces_and_dirs().workspaces) do
-                    if workspace.path == cwd() then
-                        M.open(workspace.name)
-                end
+local enable_autoload = function()
+    -- create autocmd for every file at the start of neovim that checks the current working directory
+    -- and if the cwd  matches a workspace directory then activate the corresponding workspace
+      vim.api.nvim_create_autocmd({ "VimEnter" }, {
+          pattern = "*",
+          callback = function()
+              for _, workspace in pairs(get_workspaces_and_dirs().workspaces) do
+                  if workspace.path == cwd() then
+                      M.open(workspace.name)
               end
-            end,
-        })
-    end
+            end
+          end,
+      })
 end
 
 -- run to setup user commands and custom config
@@ -692,7 +689,9 @@ M.setup = function(opts)
         desc = "Synchronize workspaces from registered directories.",
     })
 
-    enable_autoload(opts)
+    if opts.auto_open then
+        enable_autoload()
+    end
 end
 
 return M
