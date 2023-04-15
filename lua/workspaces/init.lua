@@ -24,6 +24,9 @@ local config = {
     -- sort by recent use rather than by name. requires sort to be true
     mru_sort = true,
 
+    -- option to automatically activate workspace when opening neovim in a workspace directory
+    auto_open = true,
+
     -- enable info-level notifications after adding or removing a workspace
     notify_info = true,
 
@@ -591,6 +594,22 @@ M.sync_dirs = function()
     notify.info(string.format("Directory workspaces have been synced"))
 end
 
+-- function that adds a neovim autocmd that activates 
+local enable_autoload = function()
+    -- create autocmd for every file at the start of neovim that checks the current working directory
+    -- and if the cwd  matches a workspace directory then activate the corresponding workspace
+      vim.api.nvim_create_autocmd({ "VimEnter" }, {
+          pattern = "*",
+          callback = function()
+              for _, workspace in pairs(get_workspaces_and_dirs().workspaces) do
+                  if workspace.path == cwd() then
+                      M.open(workspace.name)
+              end
+            end
+          end,
+      })
+end
+
 -- run to setup user commands and custom config
 M.setup = function(opts)
     opts = opts or {}
@@ -669,6 +688,10 @@ M.setup = function(opts)
     end, {
         desc = "Synchronize workspaces from registered directories.",
     })
+
+    if opts.auto_open then
+        enable_autoload()
+    end
 end
 
 return M
