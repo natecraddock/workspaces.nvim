@@ -59,6 +59,9 @@ The setup function accepts a table to modify the default configuration:
     -- sort by recent use rather than by name. requires sort to be true
     mru_sort = true,
 
+    -- option to automatically activate workspace when opening neovim in a workspace directory
+    auto_open = false,
+
     -- enable info-level notifications after adding or removing a workspace
     notify_info = true,
 

@@ -54,6 +54,9 @@ configuration. >
         -- sort by recent use rather than by name. requires sort to be true
         mru_sort = true,
 
+        -- option to automatically activate workspace when opening neovim in a workspace directory
+        auto_open = false,
+
         -- enable info-level notifications after adding or removing a
         -- workspace. disable to only be notified for warnings or errors.
         notify_info = true,
@@ -202,7 +205,7 @@ workspaces.get(): {table}
 
 workspaces.name(): {string}|{nil}
     Returns the name of the current workspace or nil if no workspace is open.
-    
+
 workspaces.sync_dirs()
    Synchronize all workspaces that are subfolders of registered directories.
 

@@ -25,7 +25,7 @@ local config = {
     mru_sort = true,
 
     -- option to automatically activate workspace when opening neovim in a workspace directory
-    auto_open = true,
+    auto_open = false,
 
     -- enable info-level notifications after adding or removing a workspace
     notify_info = true,
@@ -594,7 +594,7 @@ M.sync_dirs = function()
     notify.info(string.format("Directory workspaces have been synced"))
 end
 
--- function that adds a neovim autocmd that activates 
+-- function that adds a neovim autocmd that activates
 local enable_autoload = function()
     -- create autocmd for every file at the start of neovim that checks the current working directory
     -- and if the cwd  matches a workspace directory then activate the corresponding workspace
@@ -689,7 +689,7 @@ M.setup = function(opts)
         desc = "Synchronize workspaces from registered directories.",
     })
 
-    if opts.auto_open then
+    if config.auto_open then
         enable_autoload()
     end
 end
