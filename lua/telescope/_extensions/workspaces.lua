@@ -70,6 +70,19 @@ local workspaces_picker = function(opts)
                     workspaces.open(workspace.name)
                 end
             end)
+
+            actions.select_tab:replace(function()
+                actions.close(prompt_bufnr)
+                local selected = action_state.get_selected_entry()
+                if not selected then return end
+
+                local workspace = selected.value
+                if workspace and workspace ~="" then
+                  vim.cmd('tabnew')
+                  workspaces.open(workspace.name)
+                end
+            end)
+
             return true
         end,
     }):find()
