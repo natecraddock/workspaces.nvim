@@ -179,7 +179,9 @@ telescope.load_extension("workspaces")
 ```
 
 The picker will list all workspaces. `<cr>` will open the selected workspace,
-running any registered hooks. To keep nvim in insert mode (for example, when
+running any registered hooks. `<c-t>` will open the selected workspace in a new tab.
+
+To keep nvim in insert mode (for example, when
 chaining multiple telescope pickers), add the following to your telescope setup
 function.
 
