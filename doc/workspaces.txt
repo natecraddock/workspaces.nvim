@@ -206,6 +206,9 @@ workspaces.get(): {table}
 workspaces.name(): {string}|{nil}
     Returns the name of the current workspace or nil if no workspace is open.
 
+workspaces.path(): {string}|{nil}
+    Returns the path of the current workspace or nil if no workspace is open.
+
 workspaces.sync_dirs()
    Synchronize all workspaces that are subfolders of registered directories.
 

@@ -162,6 +162,8 @@ workspaces.get(): table
 
 workspaces.name(): string|nil
 
+workspaces.path(): string|nil
+
 workspaces.sync_dirs()
 
 ```
