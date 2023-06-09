@@ -431,8 +431,8 @@ M.rename = function(name, new_name)
     workspaces[i] = workspace
     store_workspaces(workspaces)
 
-    if current_workspace == name then
-        current_workspace = workspace.name
+    if current_workspace and current_workspace.name == name then
+        current_workspace = workspace
     end
 
     run_hooks(config.hooks.rename, workspace.name, workspace.path, { previous_name = name })
@@ -524,14 +524,20 @@ M.open = function(name)
     local cd_command = get_cd_command()
     vim.cmd(string.format("%s %s", cd_command, workspace.path))
 
-    current_workspace = workspace.name
+    current_workspace = workspace
     run_hooks(config.hooks.open, workspace.name, workspace.path)
 end
 
 ---returns the name of the current workspace
 ---@return string|nil
 M.name = function()
-    return current_workspace
+    return current_workspace and current_workspace.name
+end
+
+---returns the path of the current workspace
+---@return string|nil
+M.path = function()
+    return current_workspace and current_workspace.path
 end
 
 local workspace_or_dir_name_complete = function(lead, is_dir)
