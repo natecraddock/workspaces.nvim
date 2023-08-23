@@ -245,7 +245,6 @@ local add_workspace_or_directory = function(path, name, is_dir, from_dir_update)
         end
     else
         -- both given, ensure the path is expanded
-        name, path = path, name
         path = vim.fn.fnamemodify(path, ":p")
     end
 
@@ -359,12 +358,11 @@ M.add_dir = function(path)
     for _, workspace_path in ipairs(directories) do
         local workspace_name = util.path.basename(workspace_path)
 
-        add_workspace_or_directory(workspace_name, workspace_path, false, true)
+        add_workspace_or_directory(workspace_path, workspace_name, false, true)
     end
 
     local dir_name = util.path.basename(normalized_path)
-
-    add_workspace_or_directory(dir_name, normalized_path, true, false)
+    add_workspace_or_directory(normalized_path, dir_name, true, false)
 end
 
 -- This function is a legacy of the older api, but it's not worth
@@ -374,11 +372,11 @@ end
 ---@param path string|nil
 M.add_swap = function(name, path)
     if name and path then
-        M.add(name, path)
+        add_workspace_or_directory(path, name)
     elseif name and not path then
-        M.add(name, path)
+        add_workspace_or_directory(name, path)
     else
-        M.add(path, name)
+        add_workspace_or_directory(path, name)
     end
 end
 
