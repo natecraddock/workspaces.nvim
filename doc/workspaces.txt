@@ -212,6 +212,12 @@ workspaces.path(): {string}|{nil}
 workspaces.sync_dirs()
    Synchronize all workspaces that are subfolders of registered directories.
 
+workspaces.get_custom(name: {string}): {string}|{nil}
+   Returns custom string data associated with a workspace.
+
+workspaces.set_custom(name: {string}, data: {string})
+   Sets custom string data associated with a workspace.
+
 ==============================================================================
 TELESCOPE                                               *workspaces-telescope*
 

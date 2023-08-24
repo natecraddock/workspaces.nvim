@@ -166,6 +166,10 @@ workspaces.path(): string|nil
 
 workspaces.sync_dirs()
 
+workspaces.get_custom(name: string): string|nil
+
+workspaces.set_custom(name: string, data: string)
+
 ```
 
 See `:h workspaces-api` for more information on the API functions.

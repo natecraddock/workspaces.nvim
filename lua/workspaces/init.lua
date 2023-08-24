@@ -66,6 +66,7 @@ local load_workspaces = function()
             path = vim.fn.fnamemodify(data[2], ":p"),
             last_opened = data[3],
             type = data[4] or "",
+            custom = data[5] or nil,
         })
     end
 
@@ -98,7 +99,8 @@ local store_workspaces = function(workspaces)
         -- not all workspaces have a date
         local date_str = workspace.last_opened or ""
         local type = workspace.type or ""
-        data = data .. string.format("%s\0%s\0%s\0%s\n", workspace.name, workspace.path, date_str, type)
+        local custom = workspace.custom or ""
+        data = data .. string.format("%s\0%s\0%s\0%s\0%s\n", workspace.name, workspace.path, date_str, type, custom)
     end
     util.file.write(config.path, data)
 end
@@ -596,6 +598,36 @@ M.sync_dirs = function()
     end
 
     notify.info(string.format("Directory workspaces have been synced"))
+end
+
+---get custom string data associated with a workspace
+---@param name string
+---@return string
+M.get_custom = function(name)
+    local workspace = find(name)
+    if not workspace then
+        notify.warn(string.format("Workspace '%s' does not exist", name))
+        return
+    end
+
+    return workspace.custom
+end
+
+---set custom string data associated with a workspace
+---@param name string
+---@param data string
+M.set_custom = function(name, data)
+    local workspace, index = find(name)
+    if not workspace then
+        notify.warn(string.format("Workspace '%s' does not exist", name))
+        return
+    end
+
+    workspace.custom = data
+
+    local workspaces = load_workspaces()
+    workspaces[index] = workspace
+    store_workspaces(workspaces)
 end
 
 -- function that adds a neovim autocmd that activates
