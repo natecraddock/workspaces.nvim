@@ -290,7 +290,7 @@ end
 ---@param from_dir_update boolean|nil
 local remove_workspace_or_directory = function(name, is_dir, from_dir_update)
     local type_name = is_dir and "Directory" or "Workspace"
-    local path = cwd()
+    local path = (not name and cwd()) or nil
     local workspace, i = find(name, path, is_dir)
     if not workspace then
         if not name then
