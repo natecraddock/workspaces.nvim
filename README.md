@@ -247,6 +247,13 @@ Load any saved sessions using
 ```lua
 require("workspaces").setup({
     hooks = {
+        open_pre = {
+          -- If recording, save current session state and stop recording
+          "SessionsStop",
+
+          -- delete all buffers (does not save changes)
+          "silent %bdelete!",
+        },
         open = function()
           require("sessions").load(nil, { silent = true })
         end,
