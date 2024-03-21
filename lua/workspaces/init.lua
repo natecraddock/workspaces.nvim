@@ -638,6 +638,11 @@ local enable_autoload = function()
           pattern = "*",
           callback = function()
               for _, workspace in pairs(get_workspaces_and_dirs().workspaces) do
+                  -- dont autoload if nvim start with arg
+                  if vim.fn.argc(-1) > 0 then
+                    return
+                  end
+
                   if workspace.path == cwd() then
                       M.open(workspace.name)
               end
