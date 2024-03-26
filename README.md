@@ -23,6 +23,18 @@ Note that this plugin is small in scope and complexity. It has been stable for a
 long time. Just because I am not making changes doesn't mean it's been
 abandoned! It was designed to be small and stable, and it will stay that way.
 
+## Semantics
+
+Because naming could be confusing, here are some definitions:
+
+* **Workspaces**: as described above, are project directories. 
+The purpose of this plugin being to switch easily between these project directories.
+
+* **Dirs**: These are directories that contain workspaces. It allows to easily sync multiple workspaces contained in a directory.
+For example, you might have a directory called `projects` on your machine, that contains all your projects.
+Just register this directory as a `dir` with `:WorkspacesAddDir` and all the workspaces contained in
+it will be automatically added to the list of workspaces when running `:WorkspacesSyncDirs`.
+
 ## Installation
 
 Install with your favorite neovim package manager. Be sure to run the setup
