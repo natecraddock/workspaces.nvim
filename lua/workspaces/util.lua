@@ -91,6 +91,7 @@ end
 M.file.write = function(path, data)
     local fd = assert(uv.fs_open(path, "w", 438))
     assert(uv.fs_write(fd, data, 0))
+    assert(uv.fs_close(fd))
 end
 
 M.dir = {}
