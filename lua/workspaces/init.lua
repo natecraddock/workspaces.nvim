@@ -636,6 +636,7 @@ local enable_autoload = function()
     -- and if the cwd  matches a workspace directory then activate the corresponding workspace
       vim.api.nvim_create_autocmd({ "VimEnter" }, {
           pattern = "*",
+          nested = true,
           callback = function()
               for _, workspace in pairs(get_workspaces_and_dirs().workspaces) do
                   -- dont autoload if nvim start with arg
