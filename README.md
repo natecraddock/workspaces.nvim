@@ -74,6 +74,9 @@ The setup function accepts a table to modify the default configuration:
     -- option to automatically activate workspace when opening neovim in a workspace directory
     auto_open = false,
 
+    -- option to automatically activate workspace when changing directory not via this plugin
+    auto_dir = false,
+
     -- enable info-level notifications after adding or removing a workspace
     notify_info = true,
 
