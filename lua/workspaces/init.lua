@@ -520,11 +520,12 @@ M.open = function(name)
     workspaces[index].last_opened = util.date()
     store_workspaces(workspaces)
 
+    current_workspace = workspace
+
     -- change directory
     local cd_command = get_cd_command()
     vim.cmd(string.format("%s %s", cd_command, workspace.path))
 
-    current_workspace = workspace
     run_hooks(config.hooks.open, workspace.name, workspace.path)
 end
 
