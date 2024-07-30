@@ -57,6 +57,9 @@ configuration. >
         -- option to automatically activate workspace when opening neovim in a workspace directory
         auto_open = false,
 
+        -- option to automatically activate workspace when changing directory not via this plugin
+        auto_dir = false,
+
         -- enable info-level notifications after adding or removing a
         -- workspace. disable to only be notified for warnings or errors.
         notify_info = true,

@@ -27,6 +27,9 @@ local config = {
     -- option to automatically activate workspace when opening neovim in a workspace directory
     auto_open = false,
 
+    -- option to automatically activate workspace when changing directory not via this plugin
+    auto_dir = false,
+
     -- enable info-level notifications after adding or removing a workspace
     notify_info = true,
 
@@ -632,12 +635,13 @@ M.set_custom = function(name, data)
 end
 
 -- function that adds a neovim autocmd that activates
-local enable_autoload = function()
+local enable_autoload = function(group)
     -- create autocmd for every file at the start of neovim that checks the current working directory
     -- and if the cwd  matches a workspace directory then activate the corresponding workspace
       vim.api.nvim_create_autocmd({ "VimEnter" }, {
           pattern = "*",
           nested = true,
+          group = group,
           callback = function()
               for _, workspace in pairs(get_workspaces_and_dirs().workspaces) do
                   -- dont autoload if nvim start with arg
@@ -651,6 +655,38 @@ local enable_autoload = function()
             end
           end,
       })
+end
+
+-- create autocmd to enable / disable a workspace when changing dir not via this plugin
+local enable_autodir = function(group)
+    local cd_command = get_cd_command()
+    local pattern
+    if cd_command == "tcd" then
+        pattern = "tabpage"
+    elseif cd_command == "lcd" then
+        pattern = "window"
+    else
+        pattern = "global"
+    end
+
+    vim.api.nvim_create_autocmd("DirChanged", {
+        pattern = pattern,
+        group = group,
+        callback = function()
+            if cwd() == M.path() then
+                return
+            end
+
+            for _, workspace in pairs(get_workspaces_and_dirs().workspaces) do
+                if workspace.path == cwd() then
+                    M.open(workspace.name)
+                    return
+                end
+            end
+
+            current_workspace = nil
+        end,
+    })
 end
 
 -- run to setup user commands and custom config
@@ -732,8 +768,14 @@ M.setup = function(opts)
         desc = "Synchronize workspaces from registered directories.",
     })
 
+    local group = vim.api.nvim_create_augroup("workspaces.nvim", { clear = true })
+
     if config.auto_open then
-        enable_autoload()
+        enable_autoload(group)
+    end
+
+    if config.auto_dir then
+        enable_autodir(group)
     end
 end
 
