@@ -9,6 +9,7 @@ local telescope = require("telescope")
 local workspaces = require("workspaces")
 
 local keep_insert = false
+local path_hl = "String"
 
 local workspaces_picker = function(opts)
     -- compute spacing
@@ -40,7 +41,7 @@ local workspaces_picker = function(opts)
                     display = function(entry)
                         return displayer({
                             { entry.ordinal },
-                            { entry.value.path, "String" },
+                            { entry.value.path, path_hl },
                         })
                     end,
                     ordinal = entry.name,
@@ -92,6 +93,9 @@ return telescope.register_extension({
     setup = function(ext_config)
         if ext_config.keep_insert then
             keep_insert = ext_config.keep_insert
+        end
+        if ext_config.path_hl then
+            path_hl = ext_config.path_hl
         end
     end,
 
