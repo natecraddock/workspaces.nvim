@@ -212,6 +212,8 @@ require("telescope").setup({
     workspaces = {
       -- keep insert mode after selection in the picker, default is false
       keep_insert = true,
+      -- Highlight group used for the path in the picker, default is "String"
+      path_hl = "String"
     }
   }
 })
