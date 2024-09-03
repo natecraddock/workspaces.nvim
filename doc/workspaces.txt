@@ -234,13 +234,17 @@ running any registered hooks. `<c-t>` will open the selected workspace in a new 
 
 To keep nvim in insert mode (for example, when
 chaining multiple telescope pickers), add the following to your telescope
-setup function. >
+setup function. You can also specify the highlight group used for the path in
+the picker. >
 
     require("telescope").setup({
       extensions = {
         workspaces = {
           -- keep insert mode after selection in the picker, default is false
           keep_insert = true,
+          -- highlight group used for the path in the picker, default is
+          "String"
+          path_hl = "String",
         }
       }
     })
