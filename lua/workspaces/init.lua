@@ -28,6 +28,8 @@ local config = {
     auto_open = false,
 
     -- option to automatically activate workspace when changing directory not via this plugin
+    -- set to "autochdir" to enable auto_dir when using :e and vim.opt.autochdir
+    -- valid options are false, true, and "autochdir"
     auto_dir = false,
 
     -- enable info-level notifications after adding or removing a workspace
@@ -669,24 +671,34 @@ local enable_autodir = function(group)
         pattern = "global"
     end
 
+    cb = function()
+        if cwd() == M.path() then
+            return
+        end
+
+        for _, workspace in pairs(get_workspaces_and_dirs().workspaces) do
+            if workspace.path == cwd() then
+                M.open(workspace.name)
+                return
+            end
+        end
+
+        current_workspace = nil
+    end
+
     vim.api.nvim_create_autocmd("DirChanged", {
         pattern = pattern,
         group = group,
-        callback = function()
-            if cwd() == M.path() then
-                return
-            end
-
-            for _, workspace in pairs(get_workspaces_and_dirs().workspaces) do
-                if workspace.path == cwd() then
-                    M.open(workspace.name)
-                    return
-                end
-            end
-
-            current_workspace = nil
-        end,
+        callback = cb,
     })
+
+    if config.auto_dir == "autochdir" then
+        vim.api.nvim_create_autocmd("DirChanged", {
+            pattern = "auto",
+            group = group,
+            callback = cb,
+        })
+    end
 end
 
 -- run to setup user commands and custom config

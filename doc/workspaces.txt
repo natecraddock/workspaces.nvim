@@ -58,6 +58,8 @@ configuration. >
         auto_open = false,
 
         -- option to automatically activate workspace when changing directory not via this plugin
+        -- set to "autochdir" to enable auto_dir when using :e and vim.opt.autochdir
+        -- valid options are false, true, and "autochdir"
         auto_dir = false,
 
         -- enable info-level notifications after adding or removing a

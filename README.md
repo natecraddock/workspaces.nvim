@@ -27,7 +27,7 @@ abandoned! It was designed to be small and stable, and it will stay that way.
 
 Because naming could be confusing, here are some definitions:
 
-* **Workspaces**: as described above, are project directories. 
+* **Workspaces**: as described above, are project directories.
 The purpose of this plugin being to switch easily between these project directories.
 
 * **Dirs**: These are directories that contain workspaces. It allows to easily sync multiple workspaces contained in a directory.
@@ -75,6 +75,8 @@ The setup function accepts a table to modify the default configuration:
     auto_open = false,
 
     -- option to automatically activate workspace when changing directory not via this plugin
+    -- set to "autochdir" to enable auto_dir when using :e and vim.opt.autochdir
+    -- valid options are false, true, and "autochdir"
     auto_dir = false,
 
     -- enable info-level notifications after adding or removing a workspace
@@ -205,7 +207,7 @@ running any registered hooks. `<c-t>` will open the selected workspace in a new 
 To keep nvim in insert mode (for example, when
 chaining multiple telescope pickers), add the following to your telescope setup
 function. You can also specify the highlight group used for the path in
-the picker. 
+the picker.
 
 ```lua
 require("telescope").setup({
